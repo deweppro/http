@@ -1,0 +1,25 @@
+{
+  "name": "deweppro/http",
+  "description": "PSR-7",
+  "keywords": [
+    "psr-7",
+    "http"
+  ],
+  "type": "library",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Mikhail Knyazhev",
+      "email": "markus621@gmail.com"
+    }
+  ],
+  "autoload": {
+    "psr-4": {
+      "Dewep\\": "Dewep/"
+    }
+  },
+  "require": {
+    "php": ">=7.0.0",
+    "nikic/fast-route": "^1.2"
+  }
+}
