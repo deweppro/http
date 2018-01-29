@@ -165,9 +165,9 @@ class Headers
     /**
      * @param string $key
      * @param string|null $default
-     * @return string
+     * @return mixed|string
      */
-    public function getServerParam(string $key, string $default = null): string
+    public function getServerParam(string $key, string $default = null)
     {
         $key = $this->normalizeKey($key);
 
@@ -203,6 +203,16 @@ class Headers
         $key                 = $this->normalizeKey($key);
         $this->cookies[$key] = $value;
         setcookie($key, $value, $expire, $path, $domain, $secure, $httponly);
+    }
+
+    /**
+     * @param string $key
+     * @param string|null $default
+     * @return mixed|string
+     */
+    public function getCookie(string $key, string $default = null)
+    {
+        return $this->cookies[$key] ?? $default;
     }
 
     /**
