@@ -41,7 +41,7 @@ class Headers
 
 
         foreach ($headers as $key => $value) {
-            $this->set($key, $value);
+            $this->set($key, is_array($value) ? $value : [$value]);
         }
     }
 
