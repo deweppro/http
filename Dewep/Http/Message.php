@@ -10,12 +10,12 @@ abstract class Message
 
     /** @var array */
     protected static $validProtocolVersions = ['1.0', '1.1', '2.0', '2',];
-    /** @var string */
-    protected $protocolVersion = '1.1';
     /** @var Headers */
     public $headers;
     /** @var Stream */
     public $body;
+    /** @var string */
+    protected $protocolVersion = '1.1';
 
     /**
      * @return string
@@ -76,7 +76,7 @@ abstract class Message
     {
         $value = $this->headers->get($name, []);
 
-        return implode(', ', $value);
+        return implode('; ', $value);
     }
 
     /**
@@ -88,6 +88,20 @@ abstract class Message
     {
         $clone = clone $this;
         $clone->headers->set($name, $value);
+
+        return $clone;
+    }
+
+    /**
+     * @param array $headers
+     * @return Message
+     */
+    public function withHeaderFromArray(array $headers): Message
+    {
+        $clone = clone $this;
+        foreach ($headers as $name => $value) {
+            $clone->headers->set($name, is_array($value) ? $value : [$value]);
+        }
 
         return $clone;
     }
