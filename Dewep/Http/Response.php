@@ -144,36 +144,100 @@ class Response extends Message
     public function setBody($body, $format = null)
     {
         if (is_string($format)) {
-            if ($format == Resp::TYPE_JSON) {
-                $head    = Resp::HTTP_JSON;
-                $handler = '\Dewep\Parsers\Response::json';
-            } elseif ($format == Resp::TYPE_XML) {
-                $head    = Resp::HTTP_XML;
-                $handler = '\Dewep\Parsers\Response::xml';
-            } elseif ($format == Resp::TYPE_HTML) {
-                $head    = Resp::HTTP_HTML;
-                $handler = '\Dewep\Parsers\Response::html';
-            } else {
-                throw new \Exception('Specified is not a valid response type.');
-            }
-            $body = is_array($body) ? $body : [$body];
+            $head     = $format;
+            $handler  = null;
+            $filename = null;
         } else {
-            $head    = $format['head'] ?? Resp::HTTP_JSON;
-            $handler = $format['handler'] ?? '\Dewep\Parsers\Response::json';
-
-            if ($handler == '\Dewep\Parsers\Response::json') {
-                $body = is_array($body) ? $body : [$body];
-            }
+            $head     = $format['head'] ?? Resp::HTTP_OTHER;
+            $handler  = $format['handler'] ?? null;
+            $filename = $format['filename'] ?? null;
         }
 
-        $content = call_user_func($handler, $body);
+        $isFile = false;
+
+        switch (true) {
+            // json
+            case $head == Resp::TYPE_JSON || $head == Resp::HTTP_JSON:
+                $head    = Resp::HTTP_JSON;
+                $handler = '\Dewep\Parsers\Response::json';
+                $body    = is_array($body) ? $body : [$body];
+                break;
+            // xml
+            case $head == Resp::TYPE_XML || $head == Resp::HTTP_XML:
+                $head    = Resp::HTTP_XML;
+                $handler = '\Dewep\Parsers\Response::xml';
+                $body    = is_array($body) ? $body : [$body];
+                break;
+            // html
+            case $head == Resp::TYPE_HTML || $head == Resp::HTTP_HTML:
+                $head    = Resp::HTTP_HTML;
+                $handler = '\Dewep\Parsers\Response::html';
+                $body    = is_array($body) ? $body : ['body' => $body];
+                break;
+            // text
+            case $head == Resp::TYPE_TEXT || $head == Resp::HTTP_TEXT:
+                $head    = Resp::HTTP_TEXT;
+                $handler = is_array($body) ? '\Dewep\Parsers\Response::json' : null;
+                break;
+            // image
+            case in_array($head, [Resp::HTTP_GIF, Resp::HTTP_JPG, Resp::HTTP_PNG]):
+
+                break;
+            //--
+            default:
+                $isFile = true;
+                $body   = (string)$body;
+        }
+
+        if (!empty($handler)) {
+            $body = (string)call_user_func($handler, $body);
+        }
 
         $stream = new Stream(fopen('php://temp', 'r+'));
-        $stream->write($content);
+        $stream->write($body);
+
+        if ($isFile) {
+            $filename = $filename ?? hash('md5', random_bytes(10)).'.bin';
+            $head     = [
+                HeaderType::CONTENT_TYPE    => [$head],
+                'Pragma'                    => ['public'],
+                'Expires'                   => ['0'],
+                'Cache-Control'             => ['must-revalidate, post-check=0, pre-check=0', 'private'],
+                'Content-Transfer-Encoding' => ['binary'],
+                'Content-Length'            => [$stream->getSize()],
+                'Content-Disposition'       => ['attachment', sprintf('filename="%d"', $filename)],
+            ];
+        } else {
+            $head = [HeaderType::CONTENT_TYPE => [$head]];
+        }
 
         $clone = $this->withBody($stream);
 
-        return $clone->withHeader(HeaderType::CONTENT_TYPE, [$head]);
+        return $clone->withHeaderFromArray($head);
+    }
+
+    /**
+     * @param string $url
+     * @return Response
+     */
+    public function redirect(string $url, int $code = 301)
+    {
+        $clone = clone $this;
+        $clone->headers->set('Location', $url);
+        $clone->setStatusCode($code);
+
+        return $clone;
+    }
+
+    /**
+     * @param int $code
+     * @return Response
+     */
+    public function setStatusCode(int $code): Response
+    {
+        $this->status = $code;
+
+        return $this;
     }
 
     /**

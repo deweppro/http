@@ -14,6 +14,7 @@ class Response
     const TYPE_JSON = 'json';
     const TYPE_XML  = 'xml';
     const TYPE_HTML = 'html';
+    const TYPE_TEXT = 'text';
 
     /**
      * HTTP заголовки
@@ -21,6 +22,15 @@ class Response
     const HTTP_JSON = 'application/json; charset=UTF-8';
     const HTTP_XML  = 'application/xml; charset=UTF-8';
     const HTTP_HTML = 'text/html; charset=UTF-8';
+    const HTTP_TEXT = 'text/plain; charset=UTF-8';
+    //--
+    const HTTP_JPG = 'image/jpg';
+    const HTTP_PNG = 'image/png';
+    const HTTP_GIF = 'image/gif';
+    //--
+    const HTTP_PDF   = 'application/pdf';
+    const HTTP_ZIP   = 'application/zip';
+    const HTTP_OTHER = 'application/octet-stream';
 
     /**
      * @param array $body
