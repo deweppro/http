@@ -223,7 +223,7 @@ class Response extends Message
     public function redirect(string $url, int $code = 301)
     {
         $clone = clone $this;
-        $clone->headers->set('Location', $url);
+        $clone->headers->set('Location', [$url]);
         $clone->setStatusCode($code);
 
         return $clone;
