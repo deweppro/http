@@ -205,7 +205,7 @@ class Response extends Message
                 'Cache-Control'             => ['must-revalidate, post-check=0, pre-check=0', 'private'],
                 'Content-Transfer-Encoding' => ['binary'],
                 'Content-Length'            => [$stream->getSize()],
-                'Content-Disposition'       => ['attachment', sprintf('filename="%d"', $filename)],
+                'Content-Disposition'       => ['attachment', sprintf('filename="%s"', $filename)],
             ];
         } else {
             $head = [HeaderType::CONTENT_TYPE => [$head]];
