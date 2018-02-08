@@ -2,6 +2,7 @@
 
 namespace Dewep\Http;
 
+use Dewep\Exception\HttpException;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -72,10 +73,10 @@ class Route
 
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
-                throw new \Exception('Method not found', 404);
+                throw new HttpException('Method not found', 404);
                 break;
             case Dispatcher::METHOD_NOT_ALLOWED:
-                throw new \Exception('Method not allowed', 405);
+                throw new HttpException('Method not allowed', 405);
                 break;
         }
 
