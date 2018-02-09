@@ -220,7 +220,7 @@ class Response extends Message
      * @param string $url
      * @return Response
      */
-    public function redirect(string $url, int $code = 301)
+    public function redirect(string $url, int $code = 307)
     {
         $clone = clone $this;
         $clone->headers->set('Location', [$url]);
