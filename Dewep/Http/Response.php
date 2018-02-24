@@ -153,31 +153,29 @@ class Response extends Message
             $filename = $format['filename'] ?? null;
         }
 
-        $isFile = false;
+        $isFile  = false;
+        $isArray = is_array($body) || is_object($body);
 
         switch (true) {
             // json
             case $head == Resp::TYPE_JSON || $head == Resp::HTTP_JSON:
                 $head    = Resp::HTTP_JSON;
-                $handler = '\Dewep\Parsers\Response::json';
-                $body    = is_array($body) ? $body : [$body];
+                $handler = $isArray ? null : '\Dewep\Parsers\Response::json';
                 break;
             // xml
             case $head == Resp::TYPE_XML || $head == Resp::HTTP_XML:
                 $head    = Resp::HTTP_XML;
-                $handler = '\Dewep\Parsers\Response::xml';
-                $body    = is_array($body) ? $body : [$body];
+                $handler = $isArray ? null : '\Dewep\Parsers\Response::xml';
                 break;
             // html
             case $head == Resp::TYPE_HTML || $head == Resp::HTTP_HTML:
                 $head    = Resp::HTTP_HTML;
-                $handler = '\Dewep\Parsers\Response::html';
-                $body    = is_array($body) ? $body : ['body' => $body];
+                $handler = $isArray ? null : '\Dewep\Parsers\Response::html';
                 break;
             // text
             case $head == Resp::TYPE_TEXT || $head == Resp::HTTP_TEXT:
                 $head    = Resp::HTTP_TEXT;
-                $handler = is_array($body) ? '\Dewep\Parsers\Response::json' : null;
+                $handler = $isArray ? '\Dewep\Parsers\Response::json' : null;
                 break;
             // image
             case in_array($head, [Resp::HTTP_GIF, Resp::HTTP_JPG, Resp::HTTP_PNG]):
