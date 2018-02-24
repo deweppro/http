@@ -160,22 +160,22 @@ class Response extends Message
             // json
             case $head == Resp::TYPE_JSON || $head == Resp::HTTP_JSON:
                 $head    = Resp::HTTP_JSON;
-                $handler = $isArray ? null : '\Dewep\Parsers\Response::json';
+                $handler = !$isArray ? null : '\Dewep\Parsers\Response::json';
                 break;
             // xml
             case $head == Resp::TYPE_XML || $head == Resp::HTTP_XML:
                 $head    = Resp::HTTP_XML;
-                $handler = $isArray ? null : '\Dewep\Parsers\Response::xml';
+                $handler = !$isArray ? null : '\Dewep\Parsers\Response::xml';
                 break;
             // html
             case $head == Resp::TYPE_HTML || $head == Resp::HTTP_HTML:
                 $head    = Resp::HTTP_HTML;
-                $handler = $isArray ? null : '\Dewep\Parsers\Response::html';
+                $handler = !$isArray ? null : '\Dewep\Parsers\Response::html';
                 break;
             // text
             case $head == Resp::TYPE_TEXT || $head == Resp::HTTP_TEXT:
                 $head    = Resp::HTTP_TEXT;
-                $handler = $isArray ? '\Dewep\Parsers\Response::json' : null;
+                $handler = !$isArray ? null : '\Dewep\Parsers\Response::json';
                 break;
             // image
             case in_array($head, [Resp::HTTP_GIF, Resp::HTTP_JPG, Resp::HTTP_PNG]):
