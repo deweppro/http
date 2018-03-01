@@ -57,7 +57,7 @@ class Route
                 foreach ($routes as $uri => $route) {
                     foreach ($route as $method => $handler) {
                         $method = explode(',', $method);
-                        $r->addRoute($method, $uri, $handler);
+                        $r->addRoute($method, $this->fixUri($uri), $handler);
                     }
                 }
             }
@@ -69,7 +69,7 @@ class Route
         );
 
         $uri       = $this->headers->getServerParam(HeaderType::REQUEST_URI, '/');
-        $routeInfo = $dispatcher->dispatch($httpMethod, $uri);
+        $routeInfo = $dispatcher->dispatch($httpMethod, $this->fixUri($uri));
 
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
@@ -90,6 +90,15 @@ class Route
         }
 
         return $this;
+    }
+
+    /**
+     * @param string $uri
+     * @return string
+     */
+    private function fixUri(string $uri)
+    {
+        return sprintf('/%s/', trim($uri, '?/'));
     }
 
     /**
