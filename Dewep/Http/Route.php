@@ -68,8 +68,9 @@ class Route
             'GET'
         );
 
-        $uri       = $this->headers->getServerParam(HeaderType::REQUEST_URI, '/');
-        $routeInfo = $dispatcher->dispatch($httpMethod, $this->fixUri($uri));
+        $uri = $this->headers->getServerParam(HeaderType::REQUEST_URI, '/');
+        list($baseurl,) = explode('?', $uri, 2);
+        $routeInfo = $dispatcher->dispatch($httpMethod, $this->fixUri($baseurl));
 
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
