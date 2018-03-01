@@ -99,7 +99,14 @@ class Route
      */
     private function fixUri(string $uri)
     {
-        return sprintf('%s/', rtrim($uri, '?/'));
+        return sprintf(
+            '/%s',
+            str_replace(
+                ['***'],
+                ['{_:.*}'],
+                trim($uri, '?/')
+            )
+        );
     }
 
     /**
