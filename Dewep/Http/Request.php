@@ -10,6 +10,13 @@ use Dewep\Parsers\Request as BodyParser;
 class Request extends Message
 {
 
+    /** @var Uri */
+    public $url;
+    /** @var Route */
+    public $route;
+    /** @var UploadedFile */
+    public $uploadedFiles;
+    /** @var array */
     protected $validMethods = [
         'CONNECT',
         'DELETE',
@@ -21,33 +28,10 @@ class Request extends Message
         'PUT',
         'TRACE',
     ];
-
-    /** @var Uri */
-    public $url;
-    /** @var Route */
-    public $route;
-    /** @var UploadedFile */
-    public $uploadedFiles;
     /** @var mixed */
     protected $bodyParsers;
     /** @var bool */
     protected $bodyParsed = false;
-
-    /**
-     * @param array $routes
-     * @return Request
-     * @throws \Exception
-     */
-    public static function bootstrap(array $routes): Request
-    {
-        $url           = Uri::bootstrap();
-        $headers       = Headers::bootstrap();
-        $route         = (new Route($routes, $headers))->bind();
-        $body          = Stream::bootstrap();
-        $uploadedFiles = UploadedFile::bootstrap();
-
-        return new static($url, $route, $headers, $body, $uploadedFiles);
-    }
 
     /**
      * @param Uri $url
@@ -63,13 +47,39 @@ class Request extends Message
         Stream $body,
         array $uploadedFiles
     ) {
-        $this->url           = $url;
-        $this->route         = $route;
-        $this->headers       = $headers;
-        $this->body          = $body;
+        $this->url = $url;
+        $this->route = $route;
+        $this->headers = $headers;
+        $this->body = $body;
         $this->uploadedFiles = &$uploadedFiles;
         //--
         $this->setDefaultParsersBody();
+    }
+
+    private function setDefaultParsersBody()
+    {
+        $this->bodyParsers[BodyParser::JSON] = '\Dewep\Parsers\Request::json';
+        $this->bodyParsers[BodyParser::XML_APP] = '\Dewep\Parsers\Request::xml';
+        $this->bodyParsers[BodyParser::XML_TEXT] = '\Dewep\Parsers\Request::xml';
+        $this->bodyParsers[BodyParser::FORM_DATA] = '\Dewep\Parsers\Request::url';
+        $this->bodyParsers[BodyParser::FORM_WWW] = '\Dewep\Parsers\Request::other';
+        $this->bodyParsers['*'] = '\Dewep\Parsers\Request::other';
+    }
+
+    /**
+     * @param array $routes
+     * @return Request
+     * @throws \Exception
+     */
+    public static function bootstrap(array $routes): Request
+    {
+        $url = Uri::bootstrap();
+        $headers = Headers::bootstrap();
+        $route = (new Route($routes, $headers))->bind();
+        $body = Stream::bootstrap();
+        $uploadedFiles = UploadedFile::bootstrap();
+
+        return new static($url, $route, $headers, $body, $uploadedFiles);
     }
 
     /**
@@ -146,10 +156,20 @@ class Request extends Message
      */
     public function withUploadedFiles(array $uploadedFiles): Request
     {
-        $clone                = clone $this;
+        $clone = clone $this;
         $clone->uploadedFiles = $uploadedFiles;
 
         return $clone;
+    }
+
+    /**
+     * @param string $param
+     * @param mixed $default
+     * @return mixed
+     */
+    public function get(string $param, $default = null)
+    {
+        return $this->getParsedBody()[$param] ?? $default;
     }
 
     /**
@@ -159,7 +179,7 @@ class Request extends Message
     {
         if ($this->bodyParsed === false) {
             $contentType = $this->headers->getContentType();
-            $handler     = $this->bodyParsers[$contentType] ?? $this->bodyParsers['*'];
+            $handler = $this->bodyParsers[$contentType] ?? $this->bodyParsers['*'];
 
             if ($contentType == BodyParser::FORM_WWW) {
                 $this->bodyParsed = $_POST;
@@ -187,16 +207,6 @@ class Request extends Message
         $this->bodyParsers[$type] = $function;
     }
 
-    private function setDefaultParsersBody()
-    {
-        $this->bodyParsers[BodyParser::JSON]      = '\Dewep\Parsers\Request::json';
-        $this->bodyParsers[BodyParser::XML_APP]   = '\Dewep\Parsers\Request::xml';
-        $this->bodyParsers[BodyParser::XML_TEXT]  = '\Dewep\Parsers\Request::xml';
-        $this->bodyParsers[BodyParser::FORM_DATA] = '\Dewep\Parsers\Request::url';
-        $this->bodyParsers[BodyParser::FORM_WWW]  = '\Dewep\Parsers\Request::other';
-        $this->bodyParsers['*']                   = '\Dewep\Parsers\Request::other';
-    }
-
     /**
      * @param $data
      * @return Request
@@ -211,7 +221,7 @@ class Request extends Message
         ) {
             throw new \Exception('Passed to an unsupported argument');
         }
-        $clone             = clone $this;
+        $clone = clone $this;
         $clone->bodyParsed = $data;
 
         return $clone;
@@ -265,8 +275,8 @@ class Request extends Message
      */
     public function getRequestTarget(): string
     {
-        $path  = $this->url->getPath();
-        $path  = '/'.trim($path, '/');
+        $path = $this->url->getPath();
+        $path = '/'.trim($path, '/');
         $query = $this->url->getQuery();
         if (!empty($query)) {
             $path .= '?'.$query;
@@ -334,7 +344,7 @@ class Request extends Message
      */
     public function withUri(Uri $uri, bool $preserveHost = false): Request
     {
-        $clone      = clone $this;
+        $clone = clone $this;
         $clone->uri = $uri;
 
         if (!$preserveHost) {
