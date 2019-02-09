@@ -1,40 +1,44 @@
 <?php
 
-namespace Dewep\Http;
+namespace Dewep\Http\Objects;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Class UploadedFile
+ *
+ * @package Dewep\Http
  */
 class UploadedFile
 {
     /** @var string */
-    protected $file;
-    /** @var Stream */
-    protected $stream;
+    protected $file = '';
+    /** @var Stream|false */
+    protected $stream = false;
     /** @var string */
-    protected $name;
+    protected $name = '';
     /** @var string */
-    protected $type;
+    protected $type = '';
     /** @var int */
-    protected $size;
+    protected $size = 0;
     /** @var int */
     protected $error = UPLOAD_ERR_OK;
     /** @var bool */
     protected $moved = false;
 
     /**
-     * @param $file
-     * @param $name
-     * @param $type
-     * @param $size
-     * @param $error
+     * UploadedFile constructor.
+     *
+     * @param string $file
+     * @param string $name
+     * @param string $type
+     * @param int    $size
+     * @param int    $error
      */
-    public function __construct($file, $name, $type, $size, $error)
+    public function __construct(string $file, string $name, string $type, int $size, int $error)
     {
-        $this->file  = $file;
-        $this->name  = $name;
-        $this->type  = $type;
-        $this->size  = $size;
+        $this->file = $file;
+        $this->name = $name;
+        $this->type = $type;
+        $this->size = $size;
         $this->error = $error;
     }
 
@@ -47,11 +51,11 @@ class UploadedFile
 
         foreach ($_FILES as $id => $file) {
             $files[$id] = new static(
-                $file['tmp_name'] ?? null,
-                $file['name'] ?? null,
-                $file['type'] ?? null,
-                $file['size'] ?? null,
-                $file['error'] ?? null
+                $file['tmp_name'],
+                $file['name'],
+                $file['type'],
+                $file['size'],
+                $file['error']
             );
         }
 
@@ -64,12 +68,12 @@ class UploadedFile
      */
     public function getStream(): Stream
     {
-        if ($this->moved) {
+        if ($this->moved === true) {
             throw new \Exception(
                 "Uploaded file {$this->name} has already been moved"
             );
         }
-        if (is_null($this->stream)) {
+        if ($this->stream === false) {
             $this->stream = new Stream(fopen($this->file, 'r'));
         }
 
@@ -78,15 +82,16 @@ class UploadedFile
 
     /**
      * @param string $targetPath
+     *
      * @return bool
      * @throws \Exception
      */
     public function moveTo(string $targetPath): bool
     {
-        if ($this->moved) {
+        if ($this->moved === true) {
             throw new \Exception('Uploaded file already moved');
         }
-        if (!move_uploaded_file($this->file, $targetPath)) {
+        if (false === move_uploaded_file($this->file, $targetPath)) {
             throw new \Exception("Error moving uploaded file {$this->name} to {$targetPath}");
         }
 
@@ -98,7 +103,7 @@ class UploadedFile
      */
     public function getSize(): int
     {
-        return (int)$this->size;
+        return $this->size;
     }
 
     /**
@@ -106,7 +111,7 @@ class UploadedFile
      */
     public function getError(): int
     {
-        return (int)$this->error;
+        return $this->error;
     }
 
     /**
@@ -114,7 +119,7 @@ class UploadedFile
      */
     public function getClientFilename(): string
     {
-        return (string)$this->name;
+        return $this->name;
     }
 
     /**
@@ -122,7 +127,7 @@ class UploadedFile
      */
     public function getClientMediaType(): string
     {
-        return (string)$this->type;
+        return $this->type;
     }
 
 }

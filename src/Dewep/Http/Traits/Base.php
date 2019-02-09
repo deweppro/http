@@ -1,18 +1,21 @@
 <?php
 
-namespace Dewep\Http;
+namespace Dewep\Http\Traits;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Trait HttpTrait
+ *
+ * @package Dewep\Http
  */
-trait HttpTrait
+trait Base
 {
 
     /**
      * @param string $key
+     *
      * @return string
      */
-    protected function normalizeKey(string $key): string
+    protected static function normalize(string $key): string
     {
         $key = strtr(strtolower($key), '_', '-');
         if (stripos($key, 'http-') === 0) {
@@ -24,9 +27,10 @@ trait HttpTrait
 
     /**
      * @param string $key
+     *
      * @return string
      */
-    protected function originalKey(string $key): string
+    protected static function original(string $key): string
     {
         if (stripos($key, 'HTTP_') === 0) {
             $key = substr($key, 5);
@@ -36,5 +40,4 @@ trait HttpTrait
 
         return str_replace(' ', '-', $key);
     }
-
 }

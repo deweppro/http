@@ -1,25 +1,56 @@
 {
-  "name": "deweppro/http",
-  "description": "PSR-7",
-  "keywords": [
-    "psr-7",
-    "http"
-  ],
-  "type": "library",
-  "license": "MIT",
-  "authors": [
-    {
-      "name": "Mikhail Knyazhev",
-      "email": "markus621@gmail.com"
+    "name": "deweppro/http",
+    "description": "http",
+    "keywords": [
+        "psr-7",
+        "http"
+    ],
+    "homepage": "https://framework.dewep.pro",
+    "support": {
+        "issues": "https://github.com/deweppro/framework/issues",
+        "source": "https://github.com/deweppro/framework"
+    },
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Mikhail Knyazhev",
+            "email": "markus621@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Dewep\\": "src/Dewep/"
+        }
+    },
+    "autoload-dev": {
+        "psr-4": {
+            "Dewep\\Tests\\": "tests/"
+        }
+    },
+    "require": {
+        "php": "^7.2",
+        "ext-json": "*",
+        "ext-simplexml": "*",
+        "ext-libxml": "*",
+        "ext-dom": "*",
+        "nikic/fast-route": "^1.3"
+    },
+    "require-dev": {
+        "phpunit/phpunit": "^7.5",
+        "phpstan/phpstan": "^0.10"
+    },
+    "config": {
+        "sort-packages": true,
+        "platform": {
+            "php": "7.2.0"
+        }
+    },
+    "scripts": {
+        "lint": [
+            "php vendor/bin/phpstan analyse -c phpstan.neon -l max src"
+        ],
+        "test": [
+            "php vendor/bin/phpunit"
+        ]
     }
-  ],
-  "autoload": {
-    "psr-4": {
-      "Dewep\\": "Dewep/"
-    }
-  },
-  "require": {
-    "php": ">=7.0.0",
-    "nikic/fast-route": "^1.2"
-  }
 }

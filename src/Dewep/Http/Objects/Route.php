@@ -3,33 +3,34 @@
 namespace Dewep\Http;
 
 use Dewep\Exception\HttpException;
+use Dewep\Http\Objects\Headers;
+use Dewep\Http\Traits\Base;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
 /**
- * Fast-Route
+ * Class Route
  *
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * @package Dewep\Http
  */
 class Route
 {
-
-    use HttpTrait;
+    use Base;
 
     /** @var array */
-    protected $routes;
+    public $routes = [];
     /** @var Headers */
     protected $headers;
     /** @var array */
-    protected $result;
+    protected $result = [];
 
     /**
-     * @param array $routes
+     * @param array   $routes
      * @param Headers $headers
      */
     public function __construct(array $routes, Headers $headers)
     {
-        $this->routes  = $routes ?? [];
+        $this->routes = $routes;
         $this->headers = $headers;
     }
 
@@ -63,14 +64,14 @@ class Route
             }
         );
 
-        $httpMethod = $this->headers->getServerParam(
+        $httpMethod = (string)$this->headers->server->get(
             HeaderType::REQUEST_METHOD,
             'GET'
         );
 
-        $uri = $this->headers->getServerParam(HeaderType::REQUEST_URI, '/');
-        list($baseurl,) = explode('?', $uri, 2);
-        $routeInfo = $dispatcher->dispatch($httpMethod, $this->fixUri($baseurl));
+        $uri = (string)$this->headers->server->get(HeaderType::REQUEST_URI, '/');
+        list($baseurl,) = explode('?', strtolower($uri), 2);
+        $routeInfo = $dispatcher->dispatch(strtoupper($httpMethod), $this->fixUri($baseurl));
 
         switch ($routeInfo[0]) {
             case Dispatcher::NOT_FOUND:
@@ -84,10 +85,9 @@ class Route
         $this->result = $routeInfo;
 
         if (!empty($this->result[2])) {
-            $this->result[2] = array_map(
-                [$this, 'normalizeKey'],
-                $this->result[2]
-            );
+            foreach ($this->result[2] as $k => $v) {
+                $this->setAttribute($k, $v);
+            }
         }
 
         return $this;
@@ -95,6 +95,7 @@ class Route
 
     /**
      * @param string $uri
+     *
      * @return string
      */
     private function fixUri(string $uri)
@@ -111,23 +112,22 @@ class Route
 
     /**
      * @param string $name
-     * @param null $default
-     * @return array
+     * @param mixed  $default
+     *
+     * @return mixed
      */
-    public function getAttribute(string $name, $default = null): array
+    public function getAttribute(string $name, $default = null)
     {
-        $name = $this->normalizeKey($name);
-
-        return $this->result[2][$name] ?? $default;
+        return $this->result[2][self::normalize($name)] ?? $default;
     }
 
     /**
      * @param string $name
-     * @param $value
+     * @param mixed  $value
      */
     public function setAttribute(string $name, $value)
     {
-        $this->result[2][$this->normalizeKey($name)] = $value;
+        $this->result[2][self::normalize($name)] = $value;
     }
 
     /**
@@ -135,7 +135,7 @@ class Route
      */
     public function removeAttribute(string $name)
     {
-        unset($this->result[2][$this->normalizeKey($name)]);
+        unset($this->result[2][self::normalize($name)]);
     }
 
     /**

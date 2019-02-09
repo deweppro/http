@@ -3,7 +3,9 @@
 namespace Dewep\Http;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Class HeaderType
+ *
+ * @package Dewep\Http
  */
 class HeaderType
 {

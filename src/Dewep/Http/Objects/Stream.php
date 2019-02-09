@@ -1,14 +1,16 @@
 <?php
 
-namespace Dewep\Http;
+namespace Dewep\Http\Objects;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Class Stream
+ *
+ * @package Dewep\Http
  */
 class Stream
 {
 
-    const PIPE  = 4480;
+    const PIPE = 4480;
     const OTHER = 33206;
 
     /** @var array */
@@ -22,17 +24,20 @@ class Stream
     private $pipe = false;
 
     /**
-     * @param null $handle
+     * Stream constructor.
+     *
+     * @param mixed $handle
+     *
      * @throws \Exception
      */
-    public function __construct($handle = null)
+    public function __construct($handle)
     {
         if (!is_resource($handle)) {
             throw new \Exception('Not supplied resource.');
         }
 
         $this->handle = $handle;
-        $stat         = fstat($this->handle);
+        $stat = fstat($this->handle);
 
         if ($stat['mode'] == self::PIPE) {
             $this->pipe = true;
@@ -44,15 +49,21 @@ class Stream
     }
 
     /**
-     * @param null $handle
+     * @param mixed $handle
+     *
      * @return Stream
+     * @throws \Exception
      */
     public static function bootstrap($handle = null): Stream
     {
         if (!is_resource($handle)) {
             $handle = fopen('php://temp', 'r+');
-            stream_copy_to_stream(fopen('php://input', 'r'), $handle);
-            rewind($handle);
+            $source = fopen('php://input', 'r');
+
+            if ($handle !== false && $source !== false) {
+                stream_copy_to_stream($source, $handle);
+                rewind($handle);
+            }
         }
 
         return new static($handle);
@@ -78,8 +89,8 @@ class Stream
     public function rewind()
     {
         if (
-            !$this->isSeekable() ||
-            rewind($this->handle) === false
+            false === $this->isSeekable() ||
+            false === rewind($this->handle)
         ) {
             throw new \Exception('Could not rewind stream');
         }
@@ -96,14 +107,15 @@ class Stream
     }
 
     /**
-     * @param $key
-     * @return null
+     * @param string $key
+     *
+     * @return mixed
      */
-    public function getMetadata($key)
+    public function getMetadata(string $key)
     {
         $meta = stream_get_meta_data($this->handle);
 
-        return $meta[(string)$key] ?? null;
+        return $meta[$key] ?? null;
     }
 
     /**
@@ -121,13 +133,13 @@ class Stream
     public function getContents(): string
     {
         if (
-            !$this->isReadable() ||
+            $this->isReadable() === false ||
             ($contents = stream_get_contents($this->handle)) === false
         ) {
             throw new \Exception('Could not get contents of stream.');
         }
 
-        return $contents;
+        return (string)$contents;
     }
 
     /**
@@ -135,7 +147,7 @@ class Stream
      */
     public function isReadable(): bool
     {
-        $mode     = $this->getMetadata('mode');
+        $mode = $this->getMetadata('mode');
         $readeble = array_filter(
             self::$modes['readable'],
             function ($v) use ($mode) {
@@ -163,8 +175,8 @@ class Stream
     {
         $old = $this->handle;
 
-        $this->handle = null;
-        $this->pipe   = false;
+        unset($this->handle);
+        $this->pipe = false;
 
         return $old;
     }
@@ -176,7 +188,7 @@ class Stream
     {
         $stats = fstat($this->handle);
 
-        return (int)($stats['size'] ?? false);
+        return $stats['size'] ?? 0;
     }
 
     /**
@@ -203,33 +215,35 @@ class Stream
     /**
      * @param int $offset
      * @param int $whence
+     *
      * @throws \Exception
      */
-    public function seek(int $offset, $whence = SEEK_SET)
+    public function seek(int $offset, int $whence = SEEK_SET)
     {
         if (
             !$this->isSeekable() ||
-            fseek($this->handle, $offset, (int)$whence) === -1
+            fseek($this->handle, $offset, $whence) === -1
         ) {
             throw new \Exception('Could not seek in stream');
         }
     }
 
     /**
-     * @param $string
+     * @param string $string
+     *
      * @return int
      * @throws \Exception
      */
-    public function write($string): int
+    public function write(string $string): int
     {
         if (
             !$this->isWritable() ||
-            ($written = fwrite($this->handle, (string)$string)) === false
+            ($written = fwrite($this->handle, $string)) === false
         ) {
             throw new \Exception('Could not write to stream');
         }
 
-        return $written;
+        return (int)$written;
     }
 
     /**
@@ -237,7 +251,7 @@ class Stream
      */
     public function isWritable(): bool
     {
-        $mode     = $this->getMetadata('mode');
+        $mode = $this->getMetadata('mode');
         $writable = array_filter(
             self::$modes['writable'],
             function ($v) use ($mode) {
@@ -251,6 +265,7 @@ class Stream
 
     /**
      * @param int $length
+     *
      * @return string
      * @throws \Exception
      */
@@ -263,7 +278,7 @@ class Stream
             throw new \Exception('Could not read from stream');
         }
 
-        return $data;
+        return (string)$data;
     }
 
 }

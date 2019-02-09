@@ -1,13 +1,16 @@
 <?php
 
-namespace Dewep\Http;
+namespace Dewep\Http\Objects;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Class Uri
+ *
+ * @package Dewep\Http
  */
 class Uri
 {
 
+    /** @var array */
     protected static $schemePortDefault = [
         //-- общепринятые
         'ftp' => 21,
@@ -59,7 +62,7 @@ class Uri
     protected $password = '';
     /** @var string */
     protected $host = '';
-    /** @var int */
+    /** @var int|null */
     protected $port;
     /** @var string */
     protected $basePath = '';
@@ -71,32 +74,34 @@ class Uri
     protected $fragment = '';
 
     /**
-     * @param string $scheme
-     * @param string $host
+     * Uri constructor.
+     *
+     * @param string   $scheme
+     * @param string   $host
      * @param int|null $port
-     * @param string|null $path
-     * @param string $query
-     * @param string $fragment
-     * @param string $user
-     * @param string $password
+     * @param string   $path
+     * @param string   $query
+     * @param string   $fragment
+     * @param string   $user
+     * @param string   $password
      */
     public function __construct(
         string $scheme,
         string $host,
-        int $port = null,
-        string $path = null,
-        string $query = '',
-        string $fragment = '',
-        string $user = '',
-        string $password = ''
+        ?int $port,
+        string $path,
+        string $query,
+        string $fragment,
+        string $user,
+        string $password
     ) {
-        $this->scheme   = $scheme;
-        $this->host     = $host;
-        $this->port     = $port;
-        $this->path     = $path ?? '/';
-        $this->query    = $query;
+        $this->scheme = $scheme;
+        $this->host = $host;
+        $this->port = $port;
+        $this->path = $path ?? '/';
+        $this->query = $query;
         $this->fragment = $fragment;
-        $this->user     = $user;
+        $this->user = $user;
         $this->password = $password;
     }
 
@@ -105,13 +110,13 @@ class Uri
      */
     public static function bootstrap(): Uri
     {
-        $scheme   = (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') ? 'http' : 'https';
-        $user     = $_SERVER['PHP_AUTH_USER'] ?? '';
-        $pass     = $_SERVER['PHP_AUTH_PW'] ?? '';
-        $host     = $_SERVER['HTTP_HOST'] ?? null;
-        $port     = $_SERVER['SERVER_PORT'] ?? null;
-        $path     = $_SERVER['REQUEST_URI'] ?? '/';
-        $query    = $_SERVER['QUERY_STRING'] ?? '';
+        $scheme = (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') ? 'http' : 'https';
+        $user = $_SERVER['PHP_AUTH_USER'] ?? '';
+        $pass = $_SERVER['PHP_AUTH_PW'] ?? '';
+        $host = $_SERVER['HTTP_HOST'] ?? '';
+        $port = $_SERVER['SERVER_PORT'] ?? null;
+        $path = $_SERVER['REQUEST_URI'] ?? '/';
+        $query = $_SERVER['QUERY_STRING'] ?? '';
         $fragment = '';
 
         return new static($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
@@ -119,88 +124,88 @@ class Uri
 
     /**
      * @param string $scheme
+     *
      * @return Uri
      */
-    public function withScheme(string $scheme): Uri
+    public function setScheme(string $scheme): Uri
     {
-        $clone         = clone $this;
-        $clone->scheme = $scheme;
+        $this->scheme = $scheme;
 
-        return $clone;
+        return $this;
     }
 
     /**
      * @param string $user
-     * @param string|null $password
+     * @param string $password
+     *
      * @return Uri
      */
-    public function withUserInfo(string $user, string $password = null): Uri
+    public function setUserInfo(string $user, string $password): Uri
     {
-        $clone           = clone $this;
-        $clone->user     = $user;
-        $clone->password = $password ?? '';
+        $this->user = $user;
+        $this->password = $password;
 
-        return $clone;
+        return $this;
     }
 
     /**
-     * @param $host
+     * @param string $host
+     *
      * @return Uri
      */
-    public function withHost(string $host): Uri
+    public function setHost(string $host): Uri
     {
-        $clone       = clone $this;
-        $clone->host = $host;
+        $this->host = $host;
 
-        return $clone;
+        return $this;
     }
 
     /**
-     * @param int|null $port
+     * @param int $port
+     *
      * @return Uri
      */
-    public function withPort(int $port = null): Uri
+    public function setPort(int $port): Uri
     {
-        $clone       = clone $this;
-        $clone->port = $port;
+        $this->port = $port;
 
-        return $clone;
+        return $this;
     }
 
     /**
      * @param string $path
+     *
      * @return Uri
      */
-    public function withPath(string $path): Uri
+    public function setPath(string $path): Uri
     {
-        $clone       = clone $this;
-        $clone->path = $path;
+        $this->path = $path;
 
-        return $clone;
+        return $this;
     }
 
     /**
      * @param string $query
+     *
      * @return Uri
      */
-    public function withQuery(string $query): Uri
+    public function setQuery(string $query): Uri
     {
-        $clone        = clone $this;
-        $clone->query = $query;
+        $this->query = $query;
 
-        return $clone;
+        return $this;
     }
 
     /**
      * @param string $fragment
+     *
      * @return Uri
      */
-    public function withFragment(string $fragment): Uri
+    public function setFragment(string $fragment): Uri
     {
-        $clone           = clone $this;
-        $clone->fragment = trim($fragment, '#');
+        $this->fragment = trim($fragment, '#');
 
-        return $clone;
+        return $this;
     }
 
     /**
@@ -208,11 +213,11 @@ class Uri
      */
     public function __toString(): string
     {
-        $scheme    = $this->getScheme();
+        $scheme = $this->getScheme();
         $authority = $this->getAuthority();
-        $path      = $this->getPath();
-        $query     = $this->getQuery();
-        $fragment  = $this->getFragment();
+        $path = $this->getPath();
+        $query = $this->getQuery();
+        $fragment = $this->getFragment();
 
         return ($scheme ? $scheme.':' : '')
             .($authority ? '//'.$authority : '')
@@ -235,8 +240,8 @@ class Uri
     public function getAuthority(): string
     {
         $userInfo = $this->getUserInfo();
-        $host     = $this->getHost();
-        $port     = $this->getPort();
+        $host = $this->getHost();
+        $port = $this->getPort();
 
         return ($userInfo ? $userInfo.'@' : '').$host.($port !== null ? ':'.$port : '');
     }

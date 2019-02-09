@@ -2,14 +2,20 @@
 
 namespace Dewep\Http;
 
+use Dewep\Http\Objects\Headers;
+use Dewep\Http\Objects\Stream;
 use Dewep\Parsers\Response as Resp;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Class Response
+ *
+ * @package Dewep\Http
  */
-class Response extends Message
+class Response
 {
+    use Message;
 
+    /** @var array */
     protected static $messages = [
         //1xx
         100 => 'Continue',
@@ -83,99 +89,104 @@ class Response extends Message
     ];
     /** @var int */
     protected $status = 200;
+
     /** @var string */
     protected $reasonPhrase = '';
 
     /**
-     * @param int $status
+     * Response constructor.
+     *
+     * @param int     $status
      * @param Headers $headers
-     * @param Stream $body
+     * @param Stream  $body
      */
     public function __construct(
-        int $status = 200,
+        Stream $body,
         Headers $headers,
-        Stream $body
+        int $status = 200
     ) {
-        $this->status  = $status;
+        $this->status = $status;
         $this->headers = $headers;
-        $this->body    = $body;
+        $this->body = $body;
     }
 
     /**
-     * @return Response
-     */
-    public static function bootstrap(): Response
-    {
-        $headers = new Headers([], $_COOKIE);
-        $body    = new Stream(fopen('php://temp', 'r+'));
-
-        return new static(200, $headers, $body);
-    }
-
-    /**
-     * @param int $code
-     * @param string $reasonPhrase
      * @return Response
      * @throws \Exception
      */
-    public function withStatus(int $code, string $reasonPhrase = ''): Response
+    public static function bootstrap(): Response
+    {
+        $headers = new Headers([], $_COOKIE, []);
+        $body = new Stream(fopen('php://temp', 'r+'));
+
+        return new static($body, $headers, 200);
+    }
+
+    /**
+     * @param int    $code
+     * @param string $reasonPhrase
+     *
+     * @return Response
+     * @throws \Exception
+     */
+    public function setStatus(int $code, string $reasonPhrase = ''): Response
     {
         if (!isset(static::$messages[$code])) {
             throw new \Exception('Transferred to non-standard status code');
         }
 
-        $clone         = clone $this;
-        $clone->status = $code;
+        $this->status = $code;
 
         if (empty($reasonPhrase)) {
             $reasonPhrase = static::$messages[$code];
         }
-        $clone->reasonPhrase = $reasonPhrase;
+        $this->reasonPhrase = $reasonPhrase;
 
-        return $clone;
+        return $this;
     }
 
     /**
-     * @param $body
-     * @param null $format
-     * @return Message
+     * @param mixed $body
+     * @param mixed $format
+     *
+     * @return $this
      * @throws \Exception
      */
     public function setBody($body, $format = null)
     {
         if (is_string($format)) {
-            $head     = $format;
-            $handler  = null;
+            $head = $format;
+            $handler = null;
             $filename = null;
         } else {
-            $head     = $format['head'] ?? Resp::HTTP_OTHER;
-            $handler  = $format['handler'] ?? null;
+            $head = $format['head'] ?? Resp::HTTP_OTHER;
+            $handler = $format['handler'] ?? null;
             $filename = $format['filename'] ?? null;
         }
 
-        $isFile  = false;
+        $isFile = false;
         $isArray = is_array($body) || is_object($body);
 
         switch (true) {
             // json
             case $head == Resp::TYPE_JSON || $head == Resp::HTTP_JSON:
-                $head    = Resp::HTTP_JSON;
-                $handler = !$isArray ? null : '\Dewep\Parsers\Response::json';
+                $head = Resp::HTTP_JSON;
+                $handler = !$isArray ? null : \Dewep\Parsers\Response::class.'::json';
                 break;
             // xml
             case $head == Resp::TYPE_XML || $head == Resp::HTTP_XML:
-                $head    = Resp::HTTP_XML;
-                $handler = !$isArray ? null : '\Dewep\Parsers\Response::xml';
+                $head = Resp::HTTP_XML;
+                $handler = !$isArray ? null : \Dewep\Parsers\Response::class.'::xml';
                 break;
             // html
             case $head == Resp::TYPE_HTML || $head == Resp::HTTP_HTML:
-                $head    = Resp::HTTP_HTML;
-                $handler = !$isArray ? null : '\Dewep\Parsers\Response::html';
+                $head = Resp::HTTP_HTML;
+                $handler = !$isArray ? null : \Dewep\Parsers\Response::class.'::html';
                 break;
             // text
             case $head == Resp::TYPE_TEXT || $head == Resp::HTTP_TEXT:
-                $head    = Resp::HTTP_TEXT;
-                $handler = !$isArray ? null : '\Dewep\Parsers\Response::json';
+                $head = Resp::HTTP_TEXT;
+                $handler = !$isArray ? null : \Dewep\Parsers\Response::class.'::json';
                 break;
             // image
             case in_array($head, [Resp::HTTP_GIF, Resp::HTTP_JPG, Resp::HTTP_PNG]):
@@ -184,51 +195,53 @@ class Response extends Message
             //--
             default:
                 $isFile = true;
-                $body   = (string)$body;
+                $body = (string)$body;
         }
 
         if (!empty($handler)) {
             $body = (string)call_user_func($handler, $body);
         }
 
-        $stream = new Stream(fopen('php://temp', 'r+'));
-        $stream->write($body);
+        $this->body = new Stream(fopen('php://temp', 'r+'));
+        $this->body->write($body);
 
         if ($isFile) {
-            $filename = $filename ?? hash('md5', random_bytes(10)).'.bin';
-            $head     = [
-                HeaderType::CONTENT_TYPE    => [$head],
-                'Pragma'                    => ['public'],
-                'Expires'                   => ['0'],
-                'Cache-Control'             => ['must-revalidate, post-check=0, pre-check=0', 'private'],
-                'Content-Transfer-Encoding' => ['binary'],
-                'Content-Length'            => [$stream->getSize()],
-                'Content-Disposition'       => ['attachment', sprintf('filename="%s"', $filename)],
+            $filename = $filename ?? (hash('md5', random_bytes(10)).'.bin');
+            $head = [
+                HeaderType::CONTENT_TYPE => $head,
+                'Pragma' => 'public',
+                'Expires' => '0',
+                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0; private',
+                'Content-Transfer-Encoding' => 'binary',
+                'Content-Length' => $this->body->getSize(),
+                'Content-Disposition' => 'attachment; '.sprintf('filename="%s"', urlencode($filename)),
             ];
         } else {
-            $head = [HeaderType::CONTENT_TYPE => [$head]];
+            $head = [HeaderType::CONTENT_TYPE => $head];
         }
 
-        $clone = $this->withBody($stream);
+        $this->headers->clear();
+        $this->headers->replace($head);
 
-        return $clone->withHeaderFromArray($head);
+        return $this;
     }
 
     /**
      * @param string $url
+     *
      * @return Response
      */
     public function redirect(string $url, int $code = 307)
     {
-        $clone = clone $this;
-        $clone->headers->set('Location', [$url]);
-        $clone->setStatusCode($code);
+        $this->headers->set('Location', $url);
+        $this->setStatusCode($code);
 
-        return $clone;
+        return $this;
     }
 
     /**
      * @param int $code
+     *
      * @return Response
      */
     public function setStatusCode(int $code): Response
@@ -251,12 +264,11 @@ class Response extends Message
         );
         header($http, true);
 
-        foreach ($this->getHeaders() as $name => $values) {
-            $line = sprintf('%s: %s', $name, $this->getHeaderLine($name));
-            header($line, true);
+        foreach ($this->headers->allOrig() as $name => $values) {
+            header(sprintf('%s: %s', (string)$name, (string)$values), true);
         }
 
-        return (string)$this->getBody();
+        return (string)$this->body;
     }
 
     /**
@@ -272,7 +284,7 @@ class Response extends Message
      */
     public function getReasonPhrase()
     {
-        if (!is_null($this->reasonPhrase)) {
+        if ($this->reasonPhrase !== null) {
             return $this->reasonPhrase;
         }
         if (isset(static::$messages[$this->status])) {

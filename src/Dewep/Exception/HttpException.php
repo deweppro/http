@@ -3,7 +3,9 @@
 namespace Dewep\Exception;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Class HttpException
+ *
+ * @package Dewep\Exception
  */
 class HttpException extends \Exception
 {

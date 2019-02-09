@@ -3,26 +3,29 @@
 namespace Dewep\Parsers;
 
 /**
- * @author Mikhail Knyazhev <markus621@gmail.com>
+ * Class Request
+ *
+ * @package Dewep\Parsers
  */
 class Request
 {
 
-    const JSON      = 'application/json';
-    const XML_TEXT  = 'text/xml';
-    const XML_APP   = 'application/xml';
-    const FORM_WWW  = 'application/x-www-form-urlencoded';
+    const JSON = 'application/json';
+    const XML_TEXT = 'text/xml';
+    const XML_APP = 'application/xml';
+    const FORM_WWW = 'application/x-www-form-urlencoded';
     const FORM_DATA = 'multipart/form-data';
 
     /**
      * @param string $body
-     * @return mixed|null|string
+     *
+     * @return array|null
      */
-    public static function json(string $body)
+    public static function json(string $body): ?array
     {
         $body = json_decode($body, true);
 
-        if (empty($body)) {
+        if (!is_array($body)) {
             $body = null;
         }
 
@@ -31,9 +34,10 @@ class Request
 
     /**
      * @param string $body
+     *
      * @return array|null
      */
-    public static function url(string $body)
+    public static function url(string $body): ?array
     {
         $body = rawurldecode($body);
 
@@ -50,13 +54,14 @@ class Request
 
     /**
      * @param string $body
-     * @return null|\SimpleXMLElement|string
+     *
+     * @return \SimpleXMLElement|null
      */
-    public static function xml(string $body)
+    public static function xml(string $body): ?\SimpleXMLElement
     {
-        $backup        = libxml_disable_entity_loader(true);
+        $backup = libxml_disable_entity_loader(true);
         $backup_errors = libxml_use_internal_errors(true);
-        $body          = simplexml_load_string($body);
+        $body = simplexml_load_string($body);
         libxml_disable_entity_loader($backup);
         libxml_clear_errors();
         libxml_use_internal_errors($backup_errors);
@@ -70,12 +75,13 @@ class Request
     }
 
     /**
-     * @param $body
-     * @return null
+     * @param mixed $body
+     *
+     * @return mixed
      */
     public static function other($body)
     {
-        return empty($body) ? null : $body;
+        return $body;
     }
 
 }
