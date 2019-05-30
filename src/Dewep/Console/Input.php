@@ -26,21 +26,22 @@ class Input extends Base
      */
     public function build()
     {
-        $result = getopt(
-            '',
-            array_map(
-                function ($el) {
-                    return $el.'::';
-                },
-                $this->keys()
-            )
-        );
-        $this->replace($result);
+        foreach ($_SERVER["argv"] as $key => $arg) {
+            $matches = null;
+            if (preg_match('@^\-\-(.+)=(.+)@', $arg, $matches)) {
+                if ($this->has($matches[1])) {
+                    $this->set($matches[1], $matches[2]);
+                }
+            } elseif (preg_match("@^\-\-(.+)@", $arg, $matches)) {
+                if ($this->has($matches[1])) {
+                    $this->set($matches[1], true);
+                }
+            }
+        }
     }
 
     /**
      * @param string $name
-     * @param string $type
      * @param null $default
      */
     public function setOptions(string $name, $default = null)
