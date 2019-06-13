@@ -42,7 +42,7 @@ class Input extends Base
 
     /**
      * @param string $name
-     * @param null $default
+     * @param mixed|null $default
      */
     public function setOptions(string $name, $default = null)
     {
