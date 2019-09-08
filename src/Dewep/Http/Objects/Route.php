@@ -1,9 +1,8 @@
 <?php
 
-namespace Dewep\Http;
+namespace Dewep\Http\Objects;
 
 use Dewep\Exception\HttpException;
-use Dewep\Http\Objects\Headers;
 use Dewep\Http\Traits\BaseTrait;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;

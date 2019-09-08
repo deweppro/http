@@ -3,6 +3,7 @@
 namespace Dewep\Http;
 
 use Dewep\Http\Objects\Headers;
+use Dewep\Http\Objects\Route;
 use Dewep\Http\Objects\Stream;
 use Dewep\Http\Objects\UploadedFile;
 use Dewep\Http\Objects\Uri;
