@@ -3,6 +3,7 @@
 namespace Dewep\Http\Objects;
 
 use Dewep\Exception\HttpException;
+use Dewep\Http\HeaderType;
 use Dewep\Http\Traits\BaseTrait;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
