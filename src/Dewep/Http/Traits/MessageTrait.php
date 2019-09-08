@@ -1,6 +1,6 @@
 <?php
 
-namespace Dewep\Http;
+namespace Dewep\Http\Traits;
 
 use Dewep\Exception\HttpException;
 use Dewep\Http\Objects\Headers;
@@ -11,7 +11,7 @@ use Dewep\Http\Objects\Stream;
  *
  * @package Dewep\Http
  */
-trait Message
+trait MessageTrait
 {
     /** @var array */
     protected static $validProtocolVersions = ['1.0', '1.1', '2.0', '2',];
@@ -33,10 +33,10 @@ trait Message
     /**
      * @param string $version
      *
-     * @return Message
-     * @throws \Exception
+     * @return \Dewep\Http\Traits\MessageTrait
+     * @throws \Dewep\Exception\HttpException
      */
-    public function setProtocolVersion(string $version): Message
+    public function setProtocolVersion(string $version): self
     {
         if (!in_array($version, self::$validProtocolVersions)) {
             throw new HttpException('Invalid HTTP version.');

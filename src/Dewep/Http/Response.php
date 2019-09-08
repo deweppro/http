@@ -4,6 +4,7 @@ namespace Dewep\Http;
 
 use Dewep\Http\Objects\Headers;
 use Dewep\Http\Objects\Stream;
+use Dewep\Http\Traits\MessageTrait;
 use Dewep\Parsers\Response as Resp;
 
 /**
@@ -13,7 +14,7 @@ use Dewep\Parsers\Response as Resp;
  */
 class Response
 {
-    use Message;
+    use MessageTrait;
 
     /** @var array */
     protected static $messages = [

@@ -4,7 +4,7 @@ namespace Dewep\Http;
 
 use Dewep\Exception\HttpException;
 use Dewep\Http\Objects\Headers;
-use Dewep\Http\Traits\Base;
+use Dewep\Http\Traits\BaseTrait;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
@@ -15,7 +15,7 @@ use FastRoute\RouteCollector;
  */
 class Route
 {
-    use Base;
+    use BaseTrait;
 
     /** @var array */
     public $routes = [];

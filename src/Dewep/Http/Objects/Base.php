@@ -2,7 +2,7 @@
 
 namespace Dewep\Http\Objects;
 
-use Dewep\Http\Traits\Base as BaseTraits;
+use Dewep\Http\Traits\BaseTrait;
 
 /**
  * Class Base
@@ -11,7 +11,7 @@ use Dewep\Http\Traits\Base as BaseTraits;
  */
 class Base implements \JsonSerializable, BaseInterface
 {
-    use BaseTraits;
+    use BaseTrait;
 
     /** @var \ArrayObject */
     protected $object;

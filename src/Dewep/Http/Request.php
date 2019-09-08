@@ -6,6 +6,7 @@ use Dewep\Http\Objects\Headers;
 use Dewep\Http\Objects\Stream;
 use Dewep\Http\Objects\UploadedFile;
 use Dewep\Http\Objects\Uri;
+use Dewep\Http\Traits\MessageTrait;
 use Dewep\Parsers\Request as BodyParser;
 
 /**
@@ -15,7 +16,7 @@ use Dewep\Parsers\Request as BodyParser;
  */
 class Request
 {
-    use Message;
+    use MessageTrait;
 
     /** @var Uri */
     public $url;
@@ -116,7 +117,7 @@ class Request
             } else {
                 $handler = $this->bodyParsers[$contentType] ?? $this->bodyParsers['*'];
 
-                if (is_string($handler)) {
+                if (is_callable($handler)) {
                     $this->bodyParsed = call_user_func(
                         $handler,
                         (string)$this->body

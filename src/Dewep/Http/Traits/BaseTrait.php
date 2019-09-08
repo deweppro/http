@@ -7,7 +7,7 @@ namespace Dewep\Http\Traits;
  *
  * @package Dewep\Http
  */
-trait Base
+trait BaseTrait
 {
 
     /**

@@ -17,6 +17,7 @@ class HeaderType
     const USER_AGENT      = 'User-Agent';
     const CONNECTION      = 'Connection';
     const HOST            = 'Host';
+
     // without HTTP_
     const REQUEST_SCHEME  = 'Request-Scheme';
     const SERVER_PROTOCOL = 'Server-Protocol';
