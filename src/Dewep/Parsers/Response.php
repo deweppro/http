@@ -67,7 +67,12 @@ class Response
     public static function xml(array $body, string $root = '<root/>'): string
     {
         $xml = new \SimpleXMLElement($root);
-        array_walk_recursive($body, [$xml, 'addChild']);
+        array_walk_recursive(
+            $body,
+            function ($value, $key) use ($xml) {
+                $xml->addChild($key, $value);
+            }
+        );
 
         return (string)$xml->asXML();
     }
