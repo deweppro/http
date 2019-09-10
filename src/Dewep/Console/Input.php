@@ -1,13 +1,12 @@
 <?php
 
-
 namespace Dewep\Console;
-
 
 use Dewep\Http\Objects\Base;
 
 /**
  * Class Input
+ *
  * @package Dewep\Console
  */
 class Input extends Base
@@ -41,7 +40,7 @@ class Input extends Base
     }
 
     /**
-     * @param string $name
+     * @param string     $name
      * @param mixed|null $default
      */
     public function setOptions(string $name, $default = null)

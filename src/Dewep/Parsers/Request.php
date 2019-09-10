@@ -10,10 +10,10 @@ namespace Dewep\Parsers;
 class Request
 {
 
-    const JSON = 'application/json';
-    const XML_TEXT = 'text/xml';
-    const XML_APP = 'application/xml';
-    const FORM_WWW = 'application/x-www-form-urlencoded';
+    const JSON      = 'application/json';
+    const XML_TEXT  = 'text/xml';
+    const XML_APP   = 'application/xml';
+    const FORM_WWW  = 'application/x-www-form-urlencoded';
     const FORM_DATA = 'multipart/form-data';
 
     /**

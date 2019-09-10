@@ -1,24 +1,23 @@
 <?php
 
-
 namespace Dewep\Console;
-
 
 /**
  * Class Output
+ *
  * @package Dewep\Console
  */
 class Output
 {
-    const COLOR_BLANK = "\e[0m";
-    const COLOR_RED = "\e[031m";
-    const COLOR_GREEN = "\e[032m";
+    const COLOR_BLANK  = "\e[0m";
+    const COLOR_RED    = "\e[031m";
+    const COLOR_GREEN  = "\e[032m";
     const COLOR_YELLOW = "\e[033m";
-    const COLOR_BLUE = "\e[034m";
-    const BAR = "\r[";
-    const BAR_END = "]";
-    const BAR_CLEN = 30;
-    const BAR_LEN = 60;
+    const COLOR_BLUE   = "\e[034m";
+    const BAR          = "\r[";
+    const BAR_END      = "]";
+    const BAR_CLEN     = 30;
+    const BAR_LEN      = 60;
 
     /**
      * @param string $message
@@ -61,8 +60,8 @@ class Output
     }
 
     /**
-     * @param int $current
-     * @param int $max
+     * @param int    $current
+     * @param int    $max
      * @param string $message
      */
     public function progress(int $current = 0, int $max = 100, string $message = '')

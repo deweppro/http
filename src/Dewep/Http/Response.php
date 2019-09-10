@@ -97,9 +97,9 @@ class Response
     /**
      * Response constructor.
      *
-     * @param int     $status
-     * @param Headers $headers
-     * @param Stream  $body
+     * @param \Dewep\Http\Objects\Stream  $body
+     * @param \Dewep\Http\Objects\Headers $headers
+     * @param int                         $status
      */
     public function __construct(
         Stream $body,
@@ -112,7 +112,7 @@ class Response
     }
 
     /**
-     * @return Response
+     * @return \Dewep\Http\Response
      * @throws \Exception
      */
     public static function bootstrap(): Response
@@ -127,7 +127,7 @@ class Response
      * @param int    $code
      * @param string $reasonPhrase
      *
-     * @return Response
+     * @return \Dewep\Http\Response
      * @throws \Exception
      */
     public function setStatus(int $code, string $reasonPhrase = ''): Response
@@ -209,13 +209,13 @@ class Response
         if ($isFile) {
             $filename = $filename ?? (hash('md5', random_bytes(10)).'.bin');
             $head = [
-                HeaderType::CONTENT_TYPE => $head,
-                'Pragma' => 'public',
-                'Expires' => '0',
-                'Cache-Control' => 'must-revalidate, post-check=0, pre-check=0; private',
+                HeaderType::CONTENT_TYPE    => $head,
+                'Pragma'                    => 'public',
+                'Expires'                   => '0',
+                'Cache-Control'             => 'must-revalidate, post-check=0, pre-check=0; private',
                 'Content-Transfer-Encoding' => 'binary',
-                'Content-Length' => $this->body->getSize(),
-                'Content-Disposition' => 'attachment; '.sprintf('filename="%s"', urlencode($filename)),
+                'Content-Length'            => $this->body->getSize(),
+                'Content-Disposition'       => 'attachment; '.sprintf('filename="%s"', urlencode($filename)),
             ];
         } else {
             $head = [HeaderType::CONTENT_TYPE => $head];
@@ -229,10 +229,11 @@ class Response
 
     /**
      * @param string $url
+     * @param int    $code
      *
-     * @return Response
+     * @return \Dewep\Http\Response
      */
-    public function redirect(string $url, int $code = 307)
+    public function redirect(string $url, int $code = 307): Response
     {
         $this->headers->set('Location', $url);
         $this->setStatusCode($code);
@@ -243,7 +244,7 @@ class Response
     /**
      * @param int $code
      *
-     * @return Response
+     * @return \Dewep\Http\Response
      */
     public function setStatusCode(int $code): Response
     {

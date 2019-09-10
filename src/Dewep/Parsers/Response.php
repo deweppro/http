@@ -14,7 +14,7 @@ class Response
      * Типы контента
      */
     const TYPE_JSON = 'json';
-    const TYPE_XML = 'xml';
+    const TYPE_XML  = 'xml';
     const TYPE_HTML = 'html';
     const TYPE_TEXT = 'text';
 
@@ -22,7 +22,7 @@ class Response
      * HTTP заголовки
      */
     const HTTP_JSON = 'application/json; charset=UTF-8';
-    const HTTP_XML = 'application/xml; charset=UTF-8';
+    const HTTP_XML  = 'application/xml; charset=UTF-8';
     const HTTP_HTML = 'text/html; charset=UTF-8';
     const HTTP_TEXT = 'text/plain; charset=UTF-8';
     //--
@@ -30,8 +30,8 @@ class Response
     const HTTP_PNG = 'image/png';
     const HTTP_GIF = 'image/gif';
     //--
-    const HTTP_PDF = 'application/pdf';
-    const HTTP_ZIP = 'application/zip';
+    const HTTP_PDF   = 'application/pdf';
+    const HTTP_ZIP   = 'application/zip';
     const HTTP_OTHER = 'application/octet-stream';
 
     /**
@@ -67,7 +67,7 @@ class Response
     public static function xml(array $body, string $root = '<root/>'): string
     {
         $xml = new \SimpleXMLElement($root);
-        array_walk_recursive($body, array($xml, 'addChild'));
+        array_walk_recursive($body, [$xml, 'addChild']);
 
         return (string)$xml->asXML();
     }

@@ -11,16 +11,22 @@ class UploadedFile
 {
     /** @var string */
     protected $file = '';
-    /** @var Stream|false */
+
+    /** @var \Dewep\Http\Objects\Stream|false */
     protected $stream = false;
+
     /** @var string */
     protected $name = '';
+
     /** @var string */
     protected $type = '';
+
     /** @var int */
     protected $size = 0;
+
     /** @var int */
     protected $error = UPLOAD_ERR_OK;
+
     /** @var bool */
     protected $moved = false;
 
@@ -63,7 +69,7 @@ class UploadedFile
     }
 
     /**
-     * @return Stream
+     * @return \Dewep\Http\Objects\Stream
      * @throws \Exception
      */
     public function getStream(): Stream

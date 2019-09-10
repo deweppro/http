@@ -11,14 +11,18 @@ use Dewep\Http\HeaderType;
  */
 class Headers extends Base
 {
-    /** @var Base */
+    /** @var \Dewep\Http\Objects\Base */
     public $server;
-    /** @var Base */
+
+    /** @var \Dewep\Http\Objects\Base */
     public $cookie;
 
     /**
-     * @param array $server
+     * Headers constructor.
+     *
+     * @param array $headers
      * @param array $cookies
+     * @param array $server
      */
     public function __construct(array $headers, array $cookies, array $server)
     {
@@ -34,7 +38,7 @@ class Headers extends Base
     }
 
     /**
-     * @return Headers
+     * @return \Dewep\Http\Objects\Headers
      */
     public static function bootstrap(): Headers
     {

@@ -16,11 +16,17 @@ class Base implements \JsonSerializable, BaseInterface
     /** @var \ArrayObject */
     protected $object;
 
+    /** @var bool */
+    protected $normalize = true;
+
     /**
      * Base constructor.
+     *
+     * @param bool $normalize
      */
-    public function __construct()
+    public function __construct(bool $normalize = true)
     {
+        $this->normalize = $normalize;
         $this->object = new \ArrayObject(new \stdClass());
     }
 
@@ -30,7 +36,10 @@ class Base implements \JsonSerializable, BaseInterface
      */
     public function set(string $key, $value)
     {
-        $this->object[self::normalize($key)] = $value;
+        if ($this->normalize) {
+            $key = self::normalize($key);
+        }
+        $this->object[$key] = $value;
     }
 
     /**
@@ -41,12 +50,11 @@ class Base implements \JsonSerializable, BaseInterface
      */
     public function get(string $key, $default = null)
     {
-        $key = self::normalize($key);
-        if (!$this->object->offsetExists($key)) {
-            return $default;
+        if ($this->normalize) {
+            $key = self::normalize($key);
         }
 
-        return $this->object->offsetGet($key);
+        return $this->object->offsetGet($key) ?? $default;
     }
 
     /**
@@ -71,7 +79,11 @@ class Base implements \JsonSerializable, BaseInterface
      */
     public function has(string $key): bool
     {
-        return $this->object->offsetExists(self::normalize($key));
+        if ($this->normalize) {
+            $key = self::normalize($key);
+        }
+
+        return $this->object->offsetExists($key);
     }
 
     /**
@@ -89,7 +101,11 @@ class Base implements \JsonSerializable, BaseInterface
     {
         $orig = [];
         foreach ($this->all() as $key => $value) {
-            $orig[self::original($key)] = $value;
+            if ($this->normalize) {
+                $key = self::original($key);
+            }
+
+            $orig[$key] = $value;
         }
 
         return $orig;
@@ -122,6 +138,9 @@ class Base implements \JsonSerializable, BaseInterface
      */
     public function remove(string $key)
     {
+        if ($this->normalize) {
+            $key = self::normalize($key);
+        }
         $this->object->offsetUnset(self::normalize($key));
     }
 

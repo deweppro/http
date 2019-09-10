@@ -13,63 +13,71 @@ class Uri
     /** @var array */
     protected static $schemePortDefault = [
         //-- общепринятые
-        'ftp' => 21,
-        'http' => 80,
-        'rtmp' => null,
-        'rtsp' => null,
-        'https' => 443,
-        'gopher' => null,
-        'mailto' => null,
-        'news' => null,
-        'nntp' => null,
-        'irc' => null,
-        'smb' => null,
-        'prospero' => null,
-        'telnet' => null,
-        'wais' => null,
-        'xmpp' => null,
-        'file' => null,
-        'data' => null,
-        'tel' => null,
+        'ftp'              => 21,
+        'http'             => 80,
+        'rtmp'             => null,
+        'rtsp'             => null,
+        'https'            => 443,
+        'gopher'           => null,
+        'mailto'           => null,
+        'news'             => null,
+        'nntp'             => null,
+        'irc'              => null,
+        'smb'              => null,
+        'prospero'         => null,
+        'telnet'           => null,
+        'wais'             => null,
+        'xmpp'             => null,
+        'file'             => null,
+        'data'             => null,
+        'tel'              => null,
         //-- экзотические
-        'afs' => null,
-        'cid' => null,
-        'mid' => null,
-        'mailserver' => null,
-        'nfs' => null,
-        'tn3270' => null,
-        'z39.50' => null,
-        'skype' => null,
-        'smsto' => null,
-        'ed2k' => null,
-        'market' => null,
-        'steam' => null,
-        'bitcoin' => null,
-        'ob' => null,
-        'tg' => null,
+        'afs'              => null,
+        'cid'              => null,
+        'mid'              => null,
+        'mailserver'       => null,
+        'nfs'              => null,
+        'tn3270'           => null,
+        'z39.50'           => null,
+        'skype'            => null,
+        'smsto'            => null,
+        'ed2k'             => null,
+        'market'           => null,
+        'steam'            => null,
+        'bitcoin'          => null,
+        'ob'               => null,
+        'tg'               => null,
         //-- схемы в браузерах
-        'view-source' => null,
-        'chrome' => null,
+        'view-source'      => null,
+        'chrome'           => null,
         'chrome-extension' => null,
-        'opera' => null,
-        'browser' => null,
+        'opera'            => null,
+        'browser'          => null,
     ];
     /** @var string */
     protected $scheme = '';
+
     /** @var string */
     protected $user = '';
+
     /** @var string */
     protected $password = '';
+
     /** @var string */
     protected $host = '';
+
     /** @var int|null */
     protected $port;
+
     /** @var string */
     protected $basePath = '';
+
     /** @var string */
     protected $path = '';
+
     /** @var string */
     protected $query = '';
+
     /** @var string */
     protected $fragment = '';
 
@@ -106,7 +114,7 @@ class Uri
     }
 
     /**
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public static function bootstrap(): Uri
     {
@@ -125,7 +133,7 @@ class Uri
     /**
      * @param string $scheme
      *
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public function setScheme(string $scheme): Uri
     {
@@ -138,7 +146,7 @@ class Uri
      * @param string $user
      * @param string $password
      *
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public function setUserInfo(string $user, string $password): Uri
     {
@@ -151,7 +159,7 @@ class Uri
     /**
      * @param string $host
      *
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public function setHost(string $host): Uri
     {
@@ -163,7 +171,7 @@ class Uri
     /**
      * @param int $port
      *
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public function setPort(int $port): Uri
     {
@@ -175,7 +183,7 @@ class Uri
     /**
      * @param string $path
      *
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public function setPath(string $path): Uri
     {
@@ -187,7 +195,7 @@ class Uri
     /**
      * @param string $query
      *
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public function setQuery(string $query): Uri
     {
@@ -199,7 +207,7 @@ class Uri
     /**
      * @param string $fragment
      *
-     * @return Uri
+     * @return \Dewep\Http\Objects\Uri
      */
     public function setFragment(string $fragment): Uri
     {

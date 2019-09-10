@@ -2,6 +2,7 @@
 
 namespace Dewep\Http;
 
+use Dewep\Http\Objects\Base;
 use Dewep\Http\Objects\Headers;
 use Dewep\Http\Objects\Route;
 use Dewep\Http\Objects\Stream;
@@ -19,10 +20,13 @@ class Request
 {
     use MessageTrait;
 
-    /** @var Uri */
+    /** @var \Dewep\Http\Objects\Uri */
     public $url;
 
-    /** @var Route */
+    /** @var \Dewep\Http\Objects\Base */
+    public $query;
+
+    /** @var \Dewep\Http\Objects\Route */
     public $route;
 
     /** @var array */
@@ -41,17 +45,19 @@ class Request
         'TRACE',
     ];
     /** @var mixed */
-    protected $bodyParsers;
+    protected $parsers;
 
     /** @var mixed */
     protected $bodyParsed;
 
     /**
-     * @param Uri            $url
-     * @param Route          $route
-     * @param Headers        $headers
-     * @param Stream         $body
-     * @param UploadedFile[] $uploadedFiles
+     * Request constructor.
+     *
+     * @param \Dewep\Http\Objects\Uri            $url
+     * @param \Dewep\Http\Objects\Route          $route
+     * @param \Dewep\Http\Objects\Headers        $headers
+     * @param \Dewep\Http\Objects\Stream         $body
+     * @param \Dewep\Http\Objects\UploadedFile[] $uploadedFiles
      */
     public function __construct(
         Uri $url,
@@ -65,8 +71,14 @@ class Request
         $this->headers = $headers;
         $this->body = $body;
         $this->uploadedFiles = &$uploadedFiles;
-        //--
+
         $this->setDefaultParsersBody();
+
+        $query = [];
+        parse_str($this->url->getQuery(), $query);
+
+        $this->query = new Base();
+        $this->query->replace($query);
     }
 
     /**
@@ -74,12 +86,12 @@ class Request
      */
     private function setDefaultParsersBody()
     {
-        $this->bodyParsers[BodyParser::JSON] = BodyParser::class.'::json';
-        $this->bodyParsers[BodyParser::XML_APP] = BodyParser::class.'::xml';
-        $this->bodyParsers[BodyParser::XML_TEXT] = BodyParser::class.'::xml';
-        $this->bodyParsers[BodyParser::FORM_DATA] = BodyParser::class.'::url';
-        $this->bodyParsers[BodyParser::FORM_WWW] = BodyParser::class.'::other';
-        $this->bodyParsers['*'] = BodyParser::class.'::other';
+        $this->parsers[BodyParser::JSON] = BodyParser::class.'::json';
+        $this->parsers[BodyParser::XML_APP] = BodyParser::class.'::xml';
+        $this->parsers[BodyParser::XML_TEXT] = BodyParser::class.'::xml';
+        $this->parsers[BodyParser::FORM_DATA] = BodyParser::class.'::url';
+        $this->parsers[BodyParser::FORM_WWW] = BodyParser::class.'::other';
+        $this->parsers['*'] = BodyParser::class.'::other';
     }
 
     /**
@@ -100,31 +112,46 @@ class Request
     }
 
     /**
-     * @param bool $resource
-     *
-     * @return Stream|mixed|null
+     * @return \Dewep\Http\Objects\Stream|null
      */
-    public function getBody(bool $resource = false)
+    public function getRaw(): ?Stream
     {
-        if ($resource) {
-            return $this->body;
+        return $this->body;
+    }
+
+    /**
+     * @param string     $key
+     * @param mixed|null $default
+     *
+     * @return mixed|null
+     */
+    public function get(string $key, $default = null)
+    {
+        if (!is_array($this->all())) {
+            return $default;
         }
 
+        return $this->bodyParsed[$key] ?? $default;
+    }
+
+    /**
+     * @return mixed|null
+     */
+    public function all()
+    {
         if ($this->bodyParsed === null) {
             $contentType = $this->headers->getContentType();
 
             if ($contentType == BodyParser::FORM_WWW) {
                 $this->bodyParsed = $_POST;
             } else {
-                $handler = $this->bodyParsers[$contentType] ?? $this->bodyParsers['*'];
+                $handler = $this->parsers[$contentType] ?? $this->parsers['*'];
 
                 if (is_callable($handler)) {
                     $this->bodyParsed = call_user_func(
                         $handler,
                         (string)$this->body
                     );
-                } elseif (is_callable($handler)) {
-                    $this->bodyParsed = $handler((string)$this->body);
                 }
             }
         }
@@ -132,12 +159,13 @@ class Request
         return $this->bodyParsed;
     }
 
+
     /**
      * @param string   $type
      * @param callable $function
      */
-    public function setBodyParser(string $type, $function)
+    public function setBodyParser(string $type, callable $function)
     {
-        $this->bodyParsers[$type] = $function;
+        $this->parsers[$type] = $function;
     }
 }

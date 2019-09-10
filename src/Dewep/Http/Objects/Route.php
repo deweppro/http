@@ -19,14 +19,18 @@ class Route
 
     /** @var array */
     public $routes = [];
-    /** @var Headers */
+
+    /** @var \Dewep\Http\Objects\Headers */
     protected $headers;
+
     /** @var array */
     protected $result = [];
 
     /**
-     * @param array   $routes
-     * @param Headers $headers
+     * Route constructor.
+     *
+     * @param array                       $routes
+     * @param \Dewep\Http\Objects\Headers $headers
      */
     public function __construct(array $routes, Headers $headers)
     {
@@ -35,7 +39,6 @@ class Route
     }
 
     /**
-     *
      * @param string $path
      * @param string $methods
      * @param string $class
@@ -46,8 +49,8 @@ class Route
     }
 
     /**
-     * @return Route
-     * @throws \Exception
+     * @return \Dewep\Http\Objects\Route
+     * @throws \Dewep\Exception\HttpException
      */
     public function bind(): Route
     {
@@ -111,10 +114,10 @@ class Route
     }
 
     /**
-     * @param string $name
-     * @param mixed  $default
+     * @param string     $name
+     * @param mixed|null $default
      *
-     * @return mixed
+     * @return mixed|null
      */
     public function getAttribute(string $name, $default = null)
     {

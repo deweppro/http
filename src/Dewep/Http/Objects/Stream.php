@@ -10,7 +10,7 @@ namespace Dewep\Http\Objects;
 class Stream
 {
 
-    const PIPE = 4480;
+    const PIPE  = 4480;
     const OTHER = 33206;
 
     /** @var array */
@@ -18,8 +18,10 @@ class Stream
         'readable' => ['r', 'r+', 'w+', 'a+', 'x+', 'c+'],
         'writable' => ['r+', 'w', 'w+', 'a', 'a+', 'x', 'x+', 'c', 'c+'],
     ];
+
     /** @var resource */
     private $handle;
+
     /** @var bool */
     private $pipe = false;
 
