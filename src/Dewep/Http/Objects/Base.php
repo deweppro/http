@@ -27,7 +27,7 @@ class Base implements \JsonSerializable, BaseInterface
     public function __construct(bool $normalize = true)
     {
         $this->normalize = $normalize;
-        $this->object = new \ArrayObject(new \stdClass());
+        $this->object = new \ArrayObject([], \ArrayObject::STD_PROP_LIST);
     }
 
     /**
@@ -54,7 +54,11 @@ class Base implements \JsonSerializable, BaseInterface
             $key = self::normalize($key);
         }
 
-        return $this->object->offsetGet($key) ?? $default;
+        if ($this->object->offsetExists($key)) {
+            return $this->object->offsetGet($key);
+        }
+
+        return $default;
     }
 
     /**
