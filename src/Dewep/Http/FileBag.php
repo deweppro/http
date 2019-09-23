@@ -1,19 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Dewep\Http\Objects;
+namespace Dewep\Http;
 
-/**
- * Class UploadedFile
- *
- * @package Dewep\Http
- */
-class UploadedFile
+class FileBag
 {
     /** @var string */
     protected $file = '';
 
-    /** @var \Dewep\Http\Objects\Stream|false */
-    protected $stream = false;
+    /** @var \Dewep\Http\Stream|null */
+    protected $stream;
 
     /** @var string */
     protected $name = '';
@@ -31,7 +26,7 @@ class UploadedFile
     protected $moved = false;
 
     /**
-     * UploadedFile constructor.
+     * FileBag constructor.
      *
      * @param string $file
      * @param string $name
@@ -49,9 +44,9 @@ class UploadedFile
     }
 
     /**
-     * @return array
+     * @return \Dewep\Http\FileBag[]
      */
-    public static function bootstrap(): array
+    public static function initialize(): array
     {
         $files = [];
 
@@ -69,39 +64,46 @@ class UploadedFile
     }
 
     /**
-     * @return \Dewep\Http\Objects\Stream
-     * @throws \Exception
+     * @return \Dewep\Http\Stream|null
+     * @throws \Dewep\Exception\StreamException
      */
-    public function getStream(): Stream
+    public function get(): ?Stream
     {
-        if ($this->moved === true) {
-            throw new \Exception(
-                "Uploaded file {$this->name} has already been moved"
-            );
-        }
-        if ($this->stream === false) {
-            $this->stream = new Stream(fopen($this->file, 'r'));
+        if ($this->stream === null) {
+            $this->open();
         }
 
         return $this->stream;
     }
 
     /**
+     * @throws \Dewep\Exception\StreamException
+     */
+    protected function open()
+    {
+        $this->stream = new Stream(fopen($this->file, 'r'));
+    }
+
+    /**
      * @param string $targetPath
      *
      * @return bool
-     * @throws \Exception
+     * @throws \Dewep\Exception\StreamException
      */
     public function moveTo(string $targetPath): bool
     {
         if ($this->moved === true) {
-            throw new \Exception('Uploaded file already moved');
-        }
-        if (false === move_uploaded_file($this->file, $targetPath)) {
-            throw new \Exception("Error moving uploaded file {$this->name} to {$targetPath}");
+            $result = copy($this->file, $targetPath);
+        } else {
+            $result = move_uploaded_file($this->file, $targetPath);
         }
 
-        return $this->moved = true;
+        if ($result) {
+            $this->file = $targetPath;
+            $this->open();
+        }
+
+        return $result;
     }
 
     /**

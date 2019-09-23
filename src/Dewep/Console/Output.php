@@ -1,62 +1,72 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Dewep\Console;
+
+use Dewep\Http\ArrayAccess;
 
 /**
  * Class Output
  *
  * @package Dewep\Console
+ *
+ * @method write(string $message)
+ * @method success(string $message)
+ * @method danger(string $message)
+ * @method warning(string $message)
+ * @method info(string $message)
  */
-class Output
+class Output extends ArrayAccess
 {
-    const COLOR_BLANK  = "\e[0m";
-    const COLOR_RED    = "\e[031m";
-    const COLOR_GREEN  = "\e[032m";
-    const COLOR_YELLOW = "\e[033m";
-    const COLOR_BLUE   = "\e[034m";
-    const BAR          = "\r[";
-    const BAR_END      = "]";
-    const BAR_CLEN     = 30;
-    const BAR_LEN      = 60;
+    /**
+     * @var array
+     */
+    protected static $colors = [
+        'write'   => "\e[0m",
+        'success' => "\e[032m",
+        'danger'  => "\e[031m",
+        'warning' => "\e[033m",
+        'info'    => "\e[034m",
+    ];
 
     /**
-     * @param string $message
+     * Output constructor.
      */
-    public function write(string $message = '')
+    public function __construct()
     {
-        echo self::COLOR_BLANK.$message.self::COLOR_BLANK.PHP_EOL;
+        parent::__construct(false);
     }
 
     /**
-     * @param string $message
+     * @param string $name
+     * @param array  $arguments
      */
-    public function success(string $message = '')
+    public function __call(string $name, array $arguments)
     {
-        echo self::COLOR_GREEN.$message.self::COLOR_BLANK.PHP_EOL;
+        if (isset(self::$colors[$name])) {
+            return $this->colors($name, $arguments);
+        }
+
+        throw new \LogicException('Undefined method '.$name);
     }
 
     /**
-     * @param string $message
+     * @param string $name
+     * @param array  $messages
      */
-    public function danger(string $message = '')
+    protected function colors(string $name, array $messages)
     {
-        echo self::COLOR_RED.$message.self::COLOR_BLANK.PHP_EOL;
-    }
-
-    /**
-     * @param string $message
-     */
-    public function warning(string $message = '')
-    {
-        echo self::COLOR_YELLOW.$message.self::COLOR_BLANK.PHP_EOL;
-    }
-
-    /**
-     * @param string $message
-     */
-    public function info(string $message = '')
-    {
-        echo self::COLOR_BLUE.$message.self::COLOR_BLANK.PHP_EOL;
+        echo self::$colors[$name];
+        array_walk_recursive(
+            $messages,
+            function ($el) {
+                if (is_scalar($el)) {
+                    echo $el;
+                    echo "\t";
+                }
+            }
+        );
+        echo self::$colors[$name];
+        echo PHP_EOL;
     }
 
     /**
@@ -66,21 +76,30 @@ class Output
      */
     public function progress(int $current = 0, int $max = 100, string $message = '')
     {
-        $count = (int)abs($current * self::BAR_CLEN / $max);
-        $count = $count > self::BAR_CLEN ? self::BAR_CLEN : $count;
+        $linelen = 30;
+        $datalen = 60;
 
-        $message = mb_substr($message, 0, self::BAR_LEN);
+        $count = (int)abs($current * $linelen / $max);
+        $count = $count > $linelen ? $linelen : $count;
+
+        $message = mb_substr($message, 0, $datalen);
         $len = mb_strlen($message);
-        if ($len < self::BAR_LEN) {
-            $message .= str_repeat(' ', self::BAR_LEN - $len);
+        if ($len < $datalen) {
+            $message .= str_repeat(' ', $datalen - $len);
         }
 
-        echo self::BAR.
-            ($count === 0 ? '' : str_repeat("=", $count)).
-            ($count === self::BAR_CLEN ? '' : str_repeat(".", self::BAR_CLEN - $count)).
-            self::BAR_END.
-            ' '.$current.'/'.$max.' '.
-            $message.
-            ($count === self::BAR_CLEN ? PHP_EOL : '');
+        echo "\r[";
+        if ($count > 0) {
+            echo str_repeat("=", $count);
+        }
+        if ($count === $linelen) {
+            echo str_repeat(".", $linelen - $count);
+        }
+        echo "]";
+        echo $current.'/'.$max;
+        echo $message;
+        if ($count === $linelen) {
+            echo PHP_EOL;
+        }
     }
 }

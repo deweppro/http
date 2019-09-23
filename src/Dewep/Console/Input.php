@@ -1,29 +1,25 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Dewep\Console;
 
-use Dewep\Http\Objects\Base;
+use Dewep\Http\ArrayAccess;
 
 /**
  * Class Input
  *
  * @package Dewep\Console
  */
-class Input extends Base
+class Input extends ArrayAccess
 {
-
     /**
      * Input constructor.
      */
     public function __construct()
     {
-        parent::__construct();
+        parent::__construct(false);
     }
 
-    /**
-     *
-     */
-    public function build()
+    public function initialize()
     {
         foreach ($_SERVER["argv"] as $key => $arg) {
             $matches = null;
@@ -40,8 +36,8 @@ class Input extends Base
     }
 
     /**
-     * @param string     $name
-     * @param mixed|null $default
+     * @param string $name
+     * @param mixed  $default
      */
     public function setOptions(string $name, $default = null)
     {
