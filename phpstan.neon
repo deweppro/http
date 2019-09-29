@@ -1,6 +1,7 @@
 parameters:
 	ignoreErrors:
-#		- '#.*#'
+		- '#of function call_user_func expects callable#'
+		- "#Casting to string something that's already string#"
 	autoload_directories:
 		- %rootDir%/../../../src
 		- %rootDir%/../../../tests

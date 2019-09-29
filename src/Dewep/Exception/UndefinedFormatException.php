@@ -3,11 +3,11 @@
 namespace Dewep\Exception;
 
 /**
- * Class HttpException
+ * Class UndefinedFormatException
  *
  * @package Dewep\Exception
  */
-class HttpException extends \Exception
+class UndefinedFormatException extends \Exception
 {
 
 }

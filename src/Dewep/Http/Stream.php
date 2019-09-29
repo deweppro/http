@@ -1,15 +1,16 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Dewep\Http\Objects;
+namespace Dewep\Http;
+
+use Dewep\Exception\StreamException;
 
 /**
  * Class Stream
  *
- * @package Dewep\Http
+ * @package Dewep
  */
 class Stream
 {
-
     const PIPE  = 4480;
     const OTHER = 33206;
 
@@ -28,14 +29,14 @@ class Stream
     /**
      * Stream constructor.
      *
-     * @param mixed $handle
+     * @param resource|false $handle
      *
-     * @throws \Exception
+     * @throws \Dewep\Exception\StreamException
      */
     public function __construct($handle)
     {
         if (!is_resource($handle)) {
-            throw new \Exception('Not supplied resource.');
+            throw new StreamException('Not supplied resource.');
         }
 
         $this->handle = $handle;
@@ -46,26 +47,28 @@ class Stream
         } elseif ($stat['mode'] == self::OTHER) {
             $this->pipe = false;
         } else {
-            throw new \Exception('Undefined resource mode.');
+            throw new StreamException('Undefined resource mode.');
         }
     }
 
-    /**
-     * @param mixed $handle
-     *
-     * @return Stream
-     * @throws \Exception
-     */
-    public static function bootstrap($handle = null): Stream
+    public function __destruct()
     {
-        if (!is_resource($handle)) {
-            $handle = fopen('php://temp', 'r+');
-            $source = fopen('php://input', 'r');
+        $this->close();
+    }
 
-            if ($handle !== false && $source !== false) {
-                stream_copy_to_stream($source, $handle);
-                rewind($handle);
-            }
+    /**
+     * @return \Dewep\Http\Stream
+     * @throws \Dewep\Exception\StreamException
+     */
+    public static function initialize(): self
+    {
+        $handle = fopen('php://temp', 'r+');
+        $source = fopen('php://input', 'r');
+
+        if ($handle !== false && $source !== false) {
+            stream_copy_to_stream($source, $handle);
+            rewind($handle);
+            fclose($source);
         }
 
         return new static($handle);
@@ -80,13 +83,13 @@ class Stream
             $this->rewind();
 
             return $this->getContents();
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             return '';
         }
     }
 
     /**
-     * @throws \Exception
+     * @throws \Dewep\Exception\StreamException
      */
     public function rewind()
     {
@@ -94,7 +97,7 @@ class Stream
             false === $this->isSeekable() ||
             false === rewind($this->handle)
         ) {
-            throw new \Exception('Could not rewind stream');
+            throw new StreamException('Could not rewind stream');
         }
     }
 
@@ -130,7 +133,6 @@ class Stream
 
     /**
      * @return string
-     * @throws \Exception
      */
     public function getContents(): string
     {
@@ -138,7 +140,7 @@ class Stream
             $this->isReadable() === false ||
             ($contents = stream_get_contents($this->handle)) === false
         ) {
-            throw new \Exception('Could not get contents of stream.');
+            return '';
         }
 
         return (string)$contents;
@@ -163,11 +165,17 @@ class Stream
 
     public function close()
     {
+        if (!is_resource($this->handle)) {
+            return;
+        }
+
         if ($this->pipe) {
             pclose($this->handle);
         } else {
             fclose($this->handle);
         }
+
+        unset($this->handle);
     }
 
     /**
@@ -195,12 +203,17 @@ class Stream
 
     /**
      * @return int
-     * @throws \Exception
+     * @throws \Dewep\Exception\StreamException
      */
     public function tell(): int
     {
-        if (($position = ftell($this->handle)) === false || $this->pipe) {
-            throw new \Exception('Could not get the position of the pointer in stream');
+        if (
+            ($position = ftell($this->handle)) === false ||
+            $this->pipe
+        ) {
+            throw new StreamException(
+                'Could not get the position of the pointer in stream'
+            );
         }
 
         return (int)$position;
@@ -218,7 +231,7 @@ class Stream
      * @param int $offset
      * @param int $whence
      *
-     * @throws \Exception
+     * @throws \Dewep\Exception\StreamException
      */
     public function seek(int $offset, int $whence = SEEK_SET)
     {
@@ -226,7 +239,7 @@ class Stream
             !$this->isSeekable() ||
             fseek($this->handle, $offset, $whence) === -1
         ) {
-            throw new \Exception('Could not seek in stream');
+            throw new StreamException('Could not seek in stream');
         }
     }
 
@@ -234,7 +247,7 @@ class Stream
      * @param string $string
      *
      * @return int
-     * @throws \Exception
+     * @throws \Dewep\Exception\StreamException
      */
     public function write(string $string): int
     {
@@ -242,7 +255,7 @@ class Stream
             !$this->isWritable() ||
             ($written = fwrite($this->handle, $string)) === false
         ) {
-            throw new \Exception('Could not write to stream');
+            throw new StreamException('Could not write to stream');
         }
 
         return (int)$written;
@@ -269,7 +282,7 @@ class Stream
      * @param int $length
      *
      * @return string
-     * @throws \Exception
+     * @throws \Dewep\Exception\StreamException
      */
     public function read(int $length): string
     {
@@ -277,10 +290,9 @@ class Stream
             !$this->isReadable() ||
             ($data = fread($this->handle, $length)) === false
         ) {
-            throw new \Exception('Could not read from stream');
+            throw new StreamException('Could not read from stream');
         }
 
         return (string)$data;
     }
-
 }

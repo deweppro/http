@@ -1,171 +1,256 @@
-<?php
+<?php declare(strict_types=1);
 
 namespace Dewep\Http;
 
-use Dewep\Http\Objects\Base;
-use Dewep\Http\Objects\Headers;
-use Dewep\Http\Objects\Route;
-use Dewep\Http\Objects\Stream;
-use Dewep\Http\Objects\UploadedFile;
-use Dewep\Http\Objects\Uri;
-use Dewep\Http\Traits\MessageTrait;
-use Dewep\Parsers\Request as BodyParser;
+use Dewep\Http\Formatters\Helper;
 
 /**
  * Class Request
  *
  * @package Dewep\Http
  */
-class Request
+class Request extends ArrayAccess
 {
-    use MessageTrait;
+    /** @var \SimpleXMLElement|\DOMDocument|null */
+    protected $raw;
 
-    /** @var \Dewep\Http\Objects\Uri */
-    public $url;
+    /** @var \Dewep\Http\ArrayAccess */
+    protected $query;
 
-    /** @var \Dewep\Http\Objects\Base */
-    public $query;
+    /** @var \Dewep\Http\ServerBag */
+    protected $server;
 
-    /** @var \Dewep\Http\Objects\Route */
-    public $route;
+    /** @var \Dewep\Http\FileBag[] */
+    protected $files = [];
 
-    /** @var array */
-    public $uploadedFiles;
+    /** @var \Dewep\Http\CookieBag */
+    protected $cookie;
 
-    /** @var array */
-    protected $validMethods = [
-        'CONNECT',
-        'DELETE',
-        'GET',
-        'HEAD',
-        'OPTIONS',
-        'PATCH',
-        'POST',
-        'PUT',
-        'TRACE',
-    ];
-    /** @var mixed */
-    protected $parsers;
+    /** @var \Dewep\Http\SessionBag */
+    protected $session;
 
-    /** @var mixed */
-    protected $bodyParsed;
+    /** @var \Dewep\Http\HeaderBag */
+    protected $header;
+
+    /** @var \Dewep\Http\RouteBag */
+    protected $route;
 
     /**
-     * Request constructor.
-     *
-     * @param \Dewep\Http\Objects\Uri            $url
-     * @param \Dewep\Http\Objects\Route          $route
-     * @param \Dewep\Http\Objects\Headers        $headers
-     * @param \Dewep\Http\Objects\Stream         $body
-     * @param \Dewep\Http\Objects\UploadedFile[] $uploadedFiles
+     * @return \Dewep\Http\Request
+     * @throws \Dewep\Exception\UndefinedFormatException
      */
-    public function __construct(
-        Uri $url,
-        Route $route,
-        Headers $headers,
-        Stream $body,
-        array &$uploadedFiles
-    ) {
-        $this->url = $url;
-        $this->route = $route;
-        $this->headers = $headers;
-        $this->body = $body;
-        $this->uploadedFiles = &$uploadedFiles;
-
-        $this->setDefaultParsersBody();
-
-        $query = [];
-        parse_str($this->url->getQuery(), $query);
-
-        $this->query = new Base();
-        $this->query->replace($query);
-    }
-
-    /**
-     *
-     */
-    private function setDefaultParsersBody()
+    public static function initialize(): self
     {
-        $this->parsers[BodyParser::JSON] = BodyParser::class.'::json';
-        $this->parsers[BodyParser::XML_APP] = BodyParser::class.'::xml';
-        $this->parsers[BodyParser::XML_TEXT] = BodyParser::class.'::xml';
-        $this->parsers[BodyParser::FORM_DATA] = BodyParser::class.'::url';
-        $this->parsers[BodyParser::FORM_WWW] = BodyParser::class.'::other';
-        $this->parsers['*'] = BodyParser::class.'::other';
-    }
+        $self = new static();
 
-    /**
-     * @param array $routes
-     *
-     * @return Request
-     * @throws \Exception
-     */
-    public static function bootstrap(array $routes): Request
-    {
-        $url = Uri::bootstrap();
-        $headers = Headers::bootstrap();
-        $route = (new Route($routes, $headers))->bind();
-        $body = Stream::bootstrap();
-        $uploadedFiles = UploadedFile::bootstrap();
+        $self->setHeader(HeaderBag::initialize());
+        $self->setServer(ServerBag::initialize());
+        $self->setFiles(FileBag::initialize());
+        $self->setCookie(CookieBag::initialize());
 
-        return new static($url, $route, $headers, $body, $uploadedFiles);
-    }
+        $self->setQuery(new ArrayAccess(true));
+        $self->getQuery()->replace(
+            UrlBag::parse(
+                (string)$self->getServer()->get(
+                    HeaderTypeBag::REQUEST_URI,
+                    '/'
+                )
+            )->getQueryMap()
+        );
 
-    /**
-     * @return \Dewep\Http\Objects\Stream|null
-     */
-    public function getRaw(): ?Stream
-    {
-        return $this->body;
-    }
+        $self->setRoute(
+            new RouteBag(
+                $self->getHeader(), $self->getServer()
+            )
+        );
 
-    /**
-     * @param string     $key
-     * @param mixed|null $default
-     *
-     * @return mixed|null
-     */
-    public function get(string $key, $default = null)
-    {
-        if (!is_array($this->all())) {
-            return $default;
+        if (in_array(
+            $self->getServer()->getRequestMethod(),
+            [
+                HeaderTypeBag::METHOD_POST,
+                HeaderTypeBag::METHOD_PUT,
+                HeaderTypeBag::METHOD_PATCH,
+            ]
+        )) {
+            $self->setBody(
+                Helper::fromGlobalData(
+                    $self->getHeader()->getContentType()
+                )
+            );
         }
 
-        return $this->bodyParsed[$key] ?? $default;
+        return $self;
     }
 
     /**
-     * @return mixed|null
+     * @param mixed $data
+     *
+     * @return \Dewep\Http\Request
      */
-    public function all()
+    public function setBody($data): Request
     {
-        if ($this->bodyParsed === null) {
-            $contentType = $this->headers->getContentType();
+        $this->raw = null;
 
-            if ($contentType == BodyParser::FORM_WWW) {
-                $this->bodyParsed = $_POST;
-            } else {
-                $handler = $this->parsers[$contentType] ?? $this->parsers['*'];
+        if (is_array($data)) {
+            $this->replace($data);
+        } else {
+            $this->reset();
+            $this->raw = $data;
+        }
 
-                if (is_callable($handler)) {
-                    $this->bodyParsed = call_user_func(
-                        $handler,
-                        (string)$this->body
-                    );
-                }
+        return $this;
+    }
+
+    /**
+     * @return \DOMDocument|\SimpleXMLElement|array
+     */
+    public function getRawBody()
+    {
+        return $this->raw ?? $this->all();
+    }
+
+    /**
+     * @return \Dewep\Http\ArrayAccess
+     */
+    public function getQuery(): \Dewep\Http\ArrayAccess
+    {
+        return $this->query;
+    }
+
+    /**
+     * @param \Dewep\Http\ArrayAccess $query
+     *
+     * @return Request
+     */
+    public function setQuery(\Dewep\Http\ArrayAccess $query): Request
+    {
+        $this->query = $query;
+
+        return $this;
+    }
+
+    /**
+     * @return \Dewep\Http\ServerBag
+     */
+    public function getServer(): \Dewep\Http\ServerBag
+    {
+        return $this->server;
+    }
+
+    /**
+     * @param \Dewep\Http\ServerBag $server
+     *
+     * @return Request
+     */
+    public function setServer(\Dewep\Http\ServerBag $server): Request
+    {
+        $this->server = $server;
+
+        return $this;
+    }
+
+    /**
+     * @return \Dewep\Http\FileBag[]
+     */
+    public function getFiles(): array
+    {
+        return $this->files;
+    }
+
+    /**
+     * @param \Dewep\Http\FileBag[] $files
+     *
+     * @return Request
+     */
+    public function setFiles($files): Request
+    {
+        foreach ($files as $file) {
+            if ($file instanceof FileBag) {
+                $this->files[] = $file;
             }
         }
 
-        return $this->bodyParsed;
+        return $this;
     }
-
 
     /**
-     * @param string   $type
-     * @param callable $function
+     * @return \Dewep\Http\CookieBag
      */
-    public function setBodyParser(string $type, callable $function)
+    public function getCookie(): \Dewep\Http\CookieBag
     {
-        $this->parsers[$type] = $function;
+        return $this->cookie;
     }
+
+    /**
+     * @param \Dewep\Http\CookieBag $cookie
+     *
+     * @return Request
+     */
+    public function setCookie(\Dewep\Http\CookieBag $cookie): Request
+    {
+        $this->cookie = $cookie;
+
+        return $this;
+    }
+
+    /**
+     * @return \Dewep\Http\SessionBag|null
+     */
+    public function getSession(): ?\Dewep\Http\SessionBag
+    {
+        return $this->session;
+    }
+
+    /**
+     * @param \Dewep\Http\SessionBag $session
+     *
+     * @return Request
+     */
+    public function setSession(\Dewep\Http\SessionBag $session): Request
+    {
+        $this->session = $session;
+
+        return $this;
+    }
+
+    /**
+     * @return \Dewep\Http\HeaderBag
+     */
+    public function getHeader(): \Dewep\Http\HeaderBag
+    {
+        return $this->header;
+    }
+
+    /**
+     * @param \Dewep\Http\HeaderBag $header
+     *
+     * @return Request
+     */
+    public function setHeader(\Dewep\Http\HeaderBag $header): Request
+    {
+        $this->header = $header;
+
+        return $this;
+    }
+
+    /**
+     * @return \Dewep\Http\RouteBag
+     */
+    public function getRoute(): \Dewep\Http\RouteBag
+    {
+        return $this->route;
+    }
+
+    /**
+     * @param \Dewep\Http\RouteBag $route
+     *
+     * @return Request
+     */
+    public function setRoute(\Dewep\Http\RouteBag $route): Request
+    {
+        $this->route = $route;
+
+        return $this;
+    }
+
 }

@@ -1,59 +1,14 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Dewep\Http\Objects;
+namespace Dewep\Http;
 
 /**
- * Class Uri
+ * Class UrlBag
  *
  * @package Dewep\Http
  */
-class Uri
+class UrlBag
 {
-
-    /** @var array */
-    protected static $schemePortDefault = [
-        //-- общепринятые
-        'ftp'              => 21,
-        'http'             => 80,
-        'rtmp'             => null,
-        'rtsp'             => null,
-        'https'            => 443,
-        'gopher'           => null,
-        'mailto'           => null,
-        'news'             => null,
-        'nntp'             => null,
-        'irc'              => null,
-        'smb'              => null,
-        'prospero'         => null,
-        'telnet'           => null,
-        'wais'             => null,
-        'xmpp'             => null,
-        'file'             => null,
-        'data'             => null,
-        'tel'              => null,
-        //-- экзотические
-        'afs'              => null,
-        'cid'              => null,
-        'mid'              => null,
-        'mailserver'       => null,
-        'nfs'              => null,
-        'tn3270'           => null,
-        'z39.50'           => null,
-        'skype'            => null,
-        'smsto'            => null,
-        'ed2k'             => null,
-        'market'           => null,
-        'steam'            => null,
-        'bitcoin'          => null,
-        'ob'               => null,
-        'tg'               => null,
-        //-- схемы в браузерах
-        'view-source'      => null,
-        'chrome'           => null,
-        'chrome-extension' => null,
-        'opera'            => null,
-        'browser'          => null,
-    ];
     /** @var string */
     protected $scheme = '';
 
@@ -82,7 +37,7 @@ class Uri
     protected $fragment = '';
 
     /**
-     * Uri constructor.
+     * UrlBag constructor.
      *
      * @param string   $scheme
      * @param string   $host
@@ -103,20 +58,19 @@ class Uri
         string $user,
         string $password
     ) {
-        $this->scheme = $scheme;
-        $this->host = $host;
-        $this->port = $port;
-        $this->path = $path ?? '/';
-        $this->query = $query;
-        $this->fragment = $fragment;
-        $this->user = $user;
-        $this->password = $password;
+        $this->setScheme($scheme);
+        $this->setHost($host);
+        $this->setPort($port);
+        $this->setPath($path);
+        $this->setQuery($query);
+        $this->setFragment($fragment);
+        $this->setUserInfo($user, $password);
     }
 
     /**
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public static function bootstrap(): Uri
+    public static function initialize(): self
     {
         $scheme = (empty($_SERVER['HTTPS']) || $_SERVER['HTTPS'] == 'off') ? 'http' : 'https';
         $user = $_SERVER['PHP_AUTH_USER'] ?? '';
@@ -131,11 +85,31 @@ class Uri
     }
 
     /**
+     * @param string $url
+     *
+     * @return \Dewep\Http\UrlBag
+     */
+    public static function parse(string $url): self
+    {
+        $data = parse_url($url);
+        $scheme = $data['scheme'] ?? '';
+        $user = $data['user'] ?? '';
+        $pass = $data['pass'] ?? '';
+        $host = $data['host'] ?? '';
+        $port = $data['port'] ?? null;
+        $path = $data['path'] ?? '/';
+        $query = $data['query'] ?? '';
+        $fragment = $data['fragment'] ?? '';
+
+        return new static($scheme, $host, $port, $path, $query, $fragment, $user, $pass);
+    }
+
+    /**
      * @param string $scheme
      *
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public function setScheme(string $scheme): Uri
+    public function setScheme(string $scheme): self
     {
         $this->scheme = $scheme;
 
@@ -146,9 +120,9 @@ class Uri
      * @param string $user
      * @param string $password
      *
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public function setUserInfo(string $user, string $password): Uri
+    public function setUserInfo(string $user, string $password): self
     {
         $this->user = $user;
         $this->password = $password;
@@ -159,9 +133,9 @@ class Uri
     /**
      * @param string $host
      *
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public function setHost(string $host): Uri
+    public function setHost(string $host): self
     {
         $this->host = $host;
 
@@ -169,11 +143,11 @@ class Uri
     }
 
     /**
-     * @param int $port
+     * @param int|null $port
      *
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public function setPort(int $port): Uri
+    public function setPort(?int $port): self
     {
         $this->port = $port;
 
@@ -183,9 +157,9 @@ class Uri
     /**
      * @param string $path
      *
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public function setPath(string $path): Uri
+    public function setPath(string $path): self
     {
         $this->path = $path;
 
@@ -195,9 +169,9 @@ class Uri
     /**
      * @param string $query
      *
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public function setQuery(string $query): Uri
+    public function setQuery(string $query): self
     {
         $this->query = $query;
 
@@ -207,9 +181,9 @@ class Uri
     /**
      * @param string $fragment
      *
-     * @return \Dewep\Http\Objects\Uri
+     * @return \Dewep\Http\UrlBag
      */
-    public function setFragment(string $fragment): Uri
+    public function setFragment(string $fragment): self
     {
         $this->fragment = trim($fragment, '#');
 
@@ -295,11 +269,22 @@ class Uri
     }
 
     /**
+     * @return array
+     */
+    public function getQueryMap(): array
+    {
+        $array = [];
+
+        parse_str($this->query, $array);
+
+        return $array;
+    }
+
+    /**
      * @return string
      */
     public function getFragment(): string
     {
         return $this->fragment;
     }
-
 }

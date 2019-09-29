@@ -1,13 +1,13 @@
-<?php
+<?php declare(strict_types=1);
 
-namespace Dewep\Http\Objects;
+namespace Dewep\Http\Interfaces;
 
 /**
- * Class Base
+ * Interface ArrayAccessInterface
  *
- * @package Dewep\Objects
+ * @package Dewep\Http\Interfaces
  */
-interface BaseInterface
+interface ArrayAccessInterface
 {
     /**
      * @param string $key
@@ -19,7 +19,7 @@ interface BaseInterface
      * @param string $key
      * @param mixed  $default
      *
-     * @return mixed|null
+     * @return mixed
      */
     public function get(string $key, $default = null);
 
@@ -49,4 +49,6 @@ interface BaseInterface
      * @param string $key
      */
     public function remove(string $key);
+
+    public function reset();
 }
