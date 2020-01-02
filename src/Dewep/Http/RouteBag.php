@@ -25,7 +25,7 @@ final class RouteBag
     public function __construct(HeaderBag $headers, ServerBag $server)
     {
         $this->headers = $headers;
-        $this->server = $server;
+        $this->server  = $server;
     }
 
     public function set(string $path, string $methods, string $class): self

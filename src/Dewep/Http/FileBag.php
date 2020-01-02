@@ -29,10 +29,10 @@ final class FileBag
 
     public function __construct(string $file, string $name, string $type, int $size, int $error)
     {
-        $this->file = $file;
-        $this->name = $name;
-        $this->type = $type;
-        $this->size = $size;
+        $this->file  = $file;
+        $this->name  = $name;
+        $this->type  = $type;
+        $this->size  = $size;
         $this->error = $error;
     }
 

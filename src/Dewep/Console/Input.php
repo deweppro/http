@@ -29,10 +29,7 @@ final class Input extends ArrayAccess
         }
     }
 
-    /**
-     * @param null $default
-     */
-    public function setOptions(string $name, $default = null): void
+    public function setOptions(string $name, ?string $default = null): void
     {
         $name = strtolower($name);
         $this->set($name, $default);

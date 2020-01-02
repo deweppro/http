@@ -51,11 +51,11 @@ final class UrlBag
 
     public function __toString(): string
     {
-        $scheme = $this->getScheme();
+        $scheme    = $this->getScheme();
         $authority = $this->getAuthority();
-        $path = $this->getPath();
-        $query = $this->getQuery();
-        $fragment = $this->getFragment();
+        $path      = $this->getPath();
+        $query     = $this->getQuery();
+        $fragment  = $this->getFragment();
 
         return ($scheme ? $scheme.':' : '')
             .($authority ? '//'.$authority : '')
@@ -66,13 +66,13 @@ final class UrlBag
 
     public static function initialize(): self
     {
-        $scheme = (empty($_SERVER['HTTPS']) || 'off' == $_SERVER['HTTPS']) ? 'http' : 'https';
-        $user = (string)($_SERVER['PHP_AUTH_USER'] ?? '');
-        $pass = (string)($_SERVER['PHP_AUTH_PW'] ?? '');
-        $host = (string)($_SERVER['HTTP_HOST'] ?? '');
-        $port = (int)($_SERVER['SERVER_PORT'] ?? 0);
-        $path = (string)($_SERVER['REQUEST_URI'] ?? '/');
-        $query = (string)($_SERVER['QUERY_STRING'] ?? '');
+        $scheme   = (empty($_SERVER['HTTPS']) || 'off' == $_SERVER['HTTPS']) ? 'http' : 'https';
+        $user     = (string)($_SERVER['PHP_AUTH_USER'] ?? '');
+        $pass     = (string)($_SERVER['PHP_AUTH_PW'] ?? '');
+        $host     = (string)($_SERVER['HTTP_HOST'] ?? '');
+        $port     = (int)($_SERVER['SERVER_PORT'] ?? 0);
+        $path     = (string)($_SERVER['REQUEST_URI'] ?? '/');
+        $query    = (string)($_SERVER['QUERY_STRING'] ?? '');
         $fragment = '';
 
         return new self(
@@ -89,14 +89,14 @@ final class UrlBag
 
     public static function parse(string $url): self
     {
-        $data = (array)parse_url($url);
-        $scheme = (string)($data['scheme'] ?? '');
-        $user = (string)($data['user'] ?? '');
-        $pass = (string)($data['pass'] ?? '');
-        $host = (string)($data['host'] ?? '');
-        $port = (int)($data['port'] ?? null);
-        $path = (string)($data['path'] ?? '/');
-        $query = (string)($data['query'] ?? '');
+        $data     = (array)parse_url($url);
+        $scheme   = (string)($data['scheme'] ?? '');
+        $user     = (string)($data['user'] ?? '');
+        $pass     = (string)($data['pass'] ?? '');
+        $host     = (string)($data['host'] ?? '');
+        $port     = (int)($data['port'] ?? null);
+        $path     = (string)($data['path'] ?? '/');
+        $query    = (string)($data['query'] ?? '');
         $fragment = (string)($data['fragment'] ?? '');
 
         return new self(
@@ -120,7 +120,7 @@ final class UrlBag
 
     public function setUserInfo(string $user, string $password): self
     {
-        $this->user = $user;
+        $this->user     = $user;
         $this->password = $password;
 
         return $this;
@@ -169,8 +169,8 @@ final class UrlBag
     public function getAuthority(): string
     {
         $userInfo = $this->getUserInfo();
-        $host = $this->getHost();
-        $port = $this->getPort();
+        $host     = $this->getHost();
+        $port     = $this->getPort();
 
         return ($userInfo ? $userInfo.'@' : '').$host.(0 < $port ? ':'.$port : '');
     }

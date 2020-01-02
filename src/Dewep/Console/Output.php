@@ -50,7 +50,7 @@ final class Output extends ArrayAccess
         $count = $count > $linelen ? $linelen : $count;
 
         $message = mb_substr($message, 0, $datalen);
-        $len = mb_strlen($message);
+        $len     = mb_strlen($message);
         if ($len < $datalen) {
             $message .= str_repeat(' ', $datalen - $len);
         }

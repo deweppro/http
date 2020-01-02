@@ -41,9 +41,9 @@ final class XmlFormat implements FormattersInterface
         }
 
         try {
-            $backup = libxml_disable_entity_loader(true);
+            $backup        = libxml_disable_entity_loader(true);
             $backup_errors = libxml_use_internal_errors(true);
-            $data = simplexml_load_string($data);
+            $data          = simplexml_load_string($data);
             libxml_disable_entity_loader($backup);
             libxml_clear_errors();
             libxml_use_internal_errors($backup_errors);

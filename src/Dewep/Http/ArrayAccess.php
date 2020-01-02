@@ -51,7 +51,7 @@ class ArrayAccess implements ArrayAccessInterface
 
     public function keys(): array
     {
-        $keys = [];
+        $keys     = [];
         $iterator = $this->getObject()->getIterator();
         while ($iterator->valid()) {
             $keys[] = $iterator->key();

@@ -135,7 +135,7 @@ final class Stream
 
     public function isReadable(): bool
     {
-        $mode = $this->getMetadata('mode');
+        $mode     = $this->getMetadata('mode');
         $readeble = array_filter(
             self::$modes['readable'],
             function ($v) use ($mode) {
@@ -234,7 +234,7 @@ final class Stream
 
     public function isWritable(): bool
     {
-        $mode = $this->getMetadata('mode');
+        $mode     = $this->getMetadata('mode');
         $writable = array_filter(
             self::$modes['writable'],
             function ($v) use ($mode) {
