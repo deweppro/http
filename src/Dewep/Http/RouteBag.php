@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
@@ -6,44 +8,26 @@ use Dewep\Exception\HttpException;
 use FastRoute\Dispatcher;
 use FastRoute\RouteCollector;
 
-/**
- * Class RouteBag
- *
- * @package Dewep\Http
- */
-class RouteBag
+final class RouteBag
 {
     /** @var array */
-    protected $routes = [];
+    private $routes = [];
 
     /** @var \Dewep\Http\HeaderBag */
-    protected $headers;
+    private $headers;
 
     /** @var \Dewep\Http\ServerBag */
-    protected $server;
+    private $server;
 
     /** @var array */
-    protected $result = [];
+    private $result = [];
 
-    /**
-     * RouteBag constructor.
-     *
-     * @param \Dewep\Http\HeaderBag $headers
-     * @param \Dewep\Http\ServerBag $server
-     */
     public function __construct(HeaderBag $headers, ServerBag $server)
     {
         $this->headers = $headers;
         $this->server = $server;
     }
 
-    /**
-     * @param string $path
-     * @param string $methods
-     * @param string $class
-     *
-     * @return \Dewep\Http\RouteBag
-     */
     public function set(string $path, string $methods, string $class): self
     {
         $this->routes[$path][$methods] = $class;
@@ -51,11 +35,6 @@ class RouteBag
         return $this;
     }
 
-    /**
-     * @param array $routes
-     *
-     * @return \Dewep\Http\RouteBag
-     */
     public function replace(array $routes): self
     {
         $this->routes = $routes;
@@ -63,27 +42,6 @@ class RouteBag
         return $this;
     }
 
-    /**
-     * @param string $uri
-     *
-     * @return string
-     */
-    protected static function fixUri(string $uri): string
-    {
-        return sprintf(
-            '/%s',
-            str_replace(
-                ['***'],
-                ['{_:.*}'],
-                trim($uri, '?/')
-            )
-        );
-    }
-
-    /**
-     * @return \Dewep\Http\RouteBag
-     * @throws \Dewep\Exception\HttpException
-     */
     public function bind(): self
     {
         $routes = $this->routes;
@@ -108,15 +66,17 @@ class RouteBag
             )
         );
 
-        $info = $dispatcher->dispatch($httpMethod, self::fixUri($url->getPath()));
+        $info = $dispatcher->dispatch(
+            $httpMethod,
+            self::fixUri($url->getPath())
+        );
 
         switch ($info[0]) {
             case Dispatcher::NOT_FOUND:
                 throw new HttpException('Method not found', 404);
-                break;
+
             case Dispatcher::METHOD_NOT_ALLOWED:
                 throw new HttpException('Method not allowed', 405);
-                break;
         }
 
         $this->result = $info;
@@ -131,8 +91,7 @@ class RouteBag
     }
 
     /**
-     * @param string $name
-     * @param mixed  $default
+     * @param mixed $default
      *
      * @return mixed
      */
@@ -142,10 +101,7 @@ class RouteBag
     }
 
     /**
-     * @param string $name
-     * @param mixed  $value
-     *
-     * @return \Dewep\Http\RouteBag
+     * @param mixed $value
      */
     public function setAttribute(string $name, $value): self
     {
@@ -154,11 +110,6 @@ class RouteBag
         return $this;
     }
 
-    /**
-     * @param string $name
-     *
-     * @return \Dewep\Http\RouteBag
-     */
     public function removeAttribute(string $name): self
     {
         unset($this->result[2][ArrayAccess::canonize($name)]);
@@ -166,17 +117,15 @@ class RouteBag
         return $this;
     }
 
-    /**
-     * @return array
-     */
     public function getAttributes(): array
     {
         return $this->result[2] ?? [];
     }
 
     /**
-     * @return mixed
      * @throws \Dewep\Exception\HttpException
+     *
+     * @return mixed
      */
     public function getHandler()
     {
@@ -187,4 +136,15 @@ class RouteBag
         return $this->result[1];
     }
 
+    private static function fixUri(string $uri): string
+    {
+        return sprintf(
+            '/%s',
+            str_replace(
+                ['***'],
+                ['{_:.*}'],
+                trim($uri, '?/')
+            )
+        );
+    }
 }

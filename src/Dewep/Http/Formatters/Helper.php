@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http\Formatters;
 
@@ -9,12 +11,7 @@ use Dewep\Http\Formatters\Providers\HtmlFormat;
 use Dewep\Http\Formatters\Providers\JsonFormat;
 use Dewep\Http\Formatters\Providers\XmlFormat;
 
-/**
- * Class Helper
- *
- * @package Dewep\Http\Formatters
- */
-class Helper
+final class Helper
 {
     /** @var array */
     private static $formats = [
@@ -26,10 +23,9 @@ class Helper
     ];
 
     /**
-     * @param string $contentType
-     *
-     * @return array|\SimpleXMLElement|\DOMDocument
      * @throws \Dewep\Exception\UndefinedFormatException
+     *
+     * @return array|\DOMDocument|\SimpleXMLElement
      */
     public static function fromGlobalData(string $contentType)
     {
@@ -46,10 +42,8 @@ class Helper
     }
 
     /**
-     * @param string $contentType
-     * @param mixed  $data
+     * @param mixed $data
      *
-     * @return string
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function encode(string $contentType, $data): string
@@ -64,11 +58,11 @@ class Helper
     }
 
     /**
-     * @param string $contentType
-     * @param mixed  $data
+     * @param mixed $data
      *
-     * @return array|\SimpleXMLElement|\DOMDocument
      * @throws \Dewep\Exception\UndefinedFormatException
+     *
+     * @return array|\DOMDocument|\SimpleXMLElement
      */
     public static function decode(string $contentType, $data)
     {

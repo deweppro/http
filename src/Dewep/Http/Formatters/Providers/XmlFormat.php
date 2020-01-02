@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http\Formatters\Providers;
 
@@ -6,26 +8,17 @@ use Dewep\Exception\UndefinedFormatException;
 use Dewep\Http\Interfaces\FormattersInterface;
 use Dewep\Http\Stream;
 
-/**
- * Class XmlFormat
- *
- * @package Dewep\Http\Formatters\Providers
- */
-class XmlFormat implements FormattersInterface
+final class XmlFormat implements FormattersInterface
 {
-    /**
-     * @param string $contentType
-     *
-     * @return bool
-     */
     public static function detect(string $contentType): bool
     {
         return (bool)stripos($contentType, '/xml');
     }
 
     /**
-     * @return string
      * @throws \Dewep\Exception\StreamException
+     *
+     * @return string
      */
     public static function data()
     {
@@ -35,7 +28,6 @@ class XmlFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return \SimpleXMLElement
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function decode($data): \SimpleXMLElement
@@ -71,12 +63,11 @@ class XmlFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return string
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function encode($data): string
     {
-        if ($data === null) {
+        if (null === $data) {
             return '';
         }
 
@@ -99,12 +90,10 @@ class XmlFormat implements FormattersInterface
             );
 
             return (string)$xml->asXML();
-
         } catch (\Throwable $e) {
             throw new UndefinedFormatException(
                 'Invalid XML format: '.$e->getMessage()
             );
         }
     }
-
 }

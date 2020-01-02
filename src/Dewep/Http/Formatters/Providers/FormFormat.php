@@ -1,22 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http\Formatters\Providers;
 
 use Dewep\Exception\UndefinedFormatException;
 use Dewep\Http\Interfaces\FormattersInterface;
 
-/**
- * Class UriFormat
- *
- * @package Dewep\Http\Formatters\Providers
- */
-class FormFormat implements FormattersInterface
+final class FormFormat implements FormattersInterface
 {
-    /**
-     * @param string $contentType
-     *
-     * @return bool
-     */
     public static function detect(string $contentType): bool
     {
         return in_array(
@@ -39,7 +31,6 @@ class FormFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return array
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function decode($data): array
@@ -54,12 +45,11 @@ class FormFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return string
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function encode($data): string
     {
-        if ($data === null) {
+        if (null === $data) {
             return '';
         }
 
@@ -79,5 +69,4 @@ class FormFormat implements FormattersInterface
             );
         }
     }
-
 }

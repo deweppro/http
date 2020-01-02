@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http\Formatters\Providers;
 
@@ -6,26 +8,17 @@ use Dewep\Exception\UndefinedFormatException;
 use Dewep\Http\Interfaces\FormattersInterface;
 use Dewep\Http\Stream;
 
-/**
- * Class JsonFormat
- *
- * @package Dewep\Http\Formatters\Providers
- */
-class JsonFormat implements FormattersInterface
+final class JsonFormat implements FormattersInterface
 {
-    /**
-     * @param string $contentType
-     *
-     * @return bool
-     */
     public static function detect(string $contentType): bool
     {
         return (bool)stripos($contentType, '/json');
     }
 
     /**
-     * @return string
      * @throws \Dewep\Exception\StreamException
+     *
+     * @return string
      */
     public static function data()
     {
@@ -35,7 +28,6 @@ class JsonFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return array
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function decode($data): array
@@ -66,12 +58,11 @@ class JsonFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return string
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function encode($data): string
     {
-        if ($data === null) {
+        if (null === $data) {
             return '';
         }
 
@@ -91,5 +82,4 @@ class JsonFormat implements FormattersInterface
             );
         }
     }
-
 }

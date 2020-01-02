@@ -1,17 +1,14 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
 use Dewep\Http\Formatters\Helper;
 
-/**
- * Class Request
- *
- * @package Dewep\Http
- */
-class Request extends ArrayAccess
+final class Request extends ArrayAccess
 {
-    /** @var \SimpleXMLElement|\DOMDocument|null */
+    /** @var \DOMDocument|\SimpleXMLElement|null */
     protected $raw;
 
     /** @var \Dewep\Http\ArrayAccess */
@@ -36,12 +33,11 @@ class Request extends ArrayAccess
     protected $route;
 
     /**
-     * @return \Dewep\Http\Request
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function initialize(): self
     {
-        $self = new static();
+        $self = new self();
 
         $self->setHeader(HeaderBag::initialize());
         $self->setServer(ServerBag::initialize());
@@ -60,7 +56,8 @@ class Request extends ArrayAccess
 
         $self->setRoute(
             new RouteBag(
-                $self->getHeader(), $self->getServer()
+                $self->getHeader(),
+                $self->getServer()
             )
         );
 
@@ -84,8 +81,6 @@ class Request extends ArrayAccess
 
     /**
      * @param mixed $data
-     *
-     * @return \Dewep\Http\Request
      */
     public function setBody($data): Request
     {
@@ -102,7 +97,7 @@ class Request extends ArrayAccess
     }
 
     /**
-     * @return \DOMDocument|\SimpleXMLElement|array
+     * @return array|\DOMDocument|\SimpleXMLElement
      */
     public function getRawBody()
     {
@@ -112,17 +107,15 @@ class Request extends ArrayAccess
     /**
      * @return \Dewep\Http\ArrayAccess
      */
-    public function getQuery(): \Dewep\Http\ArrayAccess
+    public function getQuery(): ArrayAccess
     {
         return $this->query;
     }
 
     /**
      * @param \Dewep\Http\ArrayAccess $query
-     *
-     * @return Request
      */
-    public function setQuery(\Dewep\Http\ArrayAccess $query): Request
+    public function setQuery(ArrayAccess $query): Request
     {
         $this->query = $query;
 
@@ -132,17 +125,15 @@ class Request extends ArrayAccess
     /**
      * @return \Dewep\Http\ServerBag
      */
-    public function getServer(): \Dewep\Http\ServerBag
+    public function getServer(): ServerBag
     {
         return $this->server;
     }
 
     /**
      * @param \Dewep\Http\ServerBag $server
-     *
-     * @return Request
      */
-    public function setServer(\Dewep\Http\ServerBag $server): Request
+    public function setServer(ServerBag $server): Request
     {
         $this->server = $server;
 
@@ -159,8 +150,6 @@ class Request extends ArrayAccess
 
     /**
      * @param \Dewep\Http\FileBag[] $files
-     *
-     * @return Request
      */
     public function setFiles($files): Request
     {
@@ -176,17 +165,15 @@ class Request extends ArrayAccess
     /**
      * @return \Dewep\Http\CookieBag
      */
-    public function getCookie(): \Dewep\Http\CookieBag
+    public function getCookie(): CookieBag
     {
         return $this->cookie;
     }
 
     /**
      * @param \Dewep\Http\CookieBag $cookie
-     *
-     * @return Request
      */
-    public function setCookie(\Dewep\Http\CookieBag $cookie): Request
+    public function setCookie(CookieBag $cookie): Request
     {
         $this->cookie = $cookie;
 
@@ -196,17 +183,15 @@ class Request extends ArrayAccess
     /**
      * @return \Dewep\Http\SessionBag|null
      */
-    public function getSession(): ?\Dewep\Http\SessionBag
+    public function getSession(): ?SessionBag
     {
         return $this->session;
     }
 
     /**
      * @param \Dewep\Http\SessionBag $session
-     *
-     * @return Request
      */
-    public function setSession(\Dewep\Http\SessionBag $session): Request
+    public function setSession(SessionBag $session): Request
     {
         $this->session = $session;
 
@@ -216,17 +201,15 @@ class Request extends ArrayAccess
     /**
      * @return \Dewep\Http\HeaderBag
      */
-    public function getHeader(): \Dewep\Http\HeaderBag
+    public function getHeader(): HeaderBag
     {
         return $this->header;
     }
 
     /**
      * @param \Dewep\Http\HeaderBag $header
-     *
-     * @return Request
      */
-    public function setHeader(\Dewep\Http\HeaderBag $header): Request
+    public function setHeader(HeaderBag $header): Request
     {
         $this->header = $header;
 
@@ -236,21 +219,18 @@ class Request extends ArrayAccess
     /**
      * @return \Dewep\Http\RouteBag
      */
-    public function getRoute(): \Dewep\Http\RouteBag
+    public function getRoute(): RouteBag
     {
         return $this->route;
     }
 
     /**
      * @param \Dewep\Http\RouteBag $route
-     *
-     * @return Request
      */
-    public function setRoute(\Dewep\Http\RouteBag $route): Request
+    public function setRoute(RouteBag $route): Request
     {
         $this->route = $route;
 
         return $this;
     }
-
 }

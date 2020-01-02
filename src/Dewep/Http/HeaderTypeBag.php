@@ -1,49 +1,72 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
-/**
- * Class HeaderTypeBag
- *
- * @package Dewep\Http
- */
-class HeaderTypeBag
+final class HeaderTypeBag
 {
     // with HTTP_
-    const ACCEPT_TYPE     = 'Accept';
-    const ACCEPT_LANGUAGE = 'Accept-Language';
-    const ACCEPT_ENCODING = 'Accept-Encoding';
-    const REFERER         = 'Referer';
-    const USER_AGENT      = 'User-Agent';
-    const CONNECTION      = 'Connection';
-    const HOST            = 'Host';
-    const AJAX            = 'X-Requested-With';
+    public const ACCEPT_TYPE = 'Accept';
+
+    public const ACCEPT_LANGUAGE = 'Accept-Language';
+
+    public const ACCEPT_ENCODING = 'Accept-Encoding';
+
+    public const REFERER = 'Referer';
+
+    public const USER_AGENT = 'User-Agent';
+
+    public const CONNECTION = 'Connection';
+
+    public const HOST = 'Host';
+
+    public const AJAX = 'X-Requested-With';
 
     // without HTTP_
-    const REQUEST_SCHEME  = 'Request-Scheme';
-    const SERVER_PROTOCOL = 'Server-Protocol';
-    const DOCUMENT_ROOT   = 'Document-Root';
-    const DOCUMENT_URI    = 'Document-Uri';
-    const REQUEST_URI     = 'Request-Uri';
-    const SCRIPT_NAME     = 'Script-Name';
-    const CONTENT_LENGTH  = 'Content-Length';
-    const CONTENT_TYPE    = 'Content-Type';
-    const REQUEST_METHOD  = 'Request-Method';
-    const QUERY_STRING    = 'Query-String';
-    const REQUEST_TIME    = 'Request-Time';
-    const SERVER_NAME     = 'Server-Name';
+    public const REQUEST_SCHEME = 'Request-Scheme';
 
-    const METHOD_CONNECT = 'CONNECT';
-    const METHOD_DELETE  = 'DELETE';
-    const METHOD_GET     = 'GET';
-    const METHOD_HEAD    = 'HEAD';
-    const METHOD_OPTIONS = 'OPTIONS';
-    const METHOD_PATCH   = 'PATCH';
-    const METHOD_POST    = 'POST';
-    const METHOD_PUT     = 'PUT';
-    const METHOD_TRACE   = 'TRACE';
+    public const SERVER_PROTOCOL = 'Server-Protocol';
 
-    const VALID_METHODS = [
+    public const DOCUMENT_ROOT = 'Document-Root';
+
+    public const DOCUMENT_URI = 'Document-Uri';
+
+    public const REQUEST_URI = 'Request-Uri';
+
+    public const SCRIPT_NAME = 'Script-Name';
+
+    public const CONTENT_LENGTH = 'Content-Length';
+
+    public const CONTENT_TYPE = 'Content-Type';
+
+    public const REQUEST_METHOD = 'Request-Method';
+
+    public const QUERY_STRING = 'Query-String';
+
+    public const REQUEST_TIME = 'Request-Time';
+
+    public const SERVER_NAME = 'Server-Name';
+
+    public const METHOD_CONNECT = 'CONNECT';
+
+    public const METHOD_DELETE = 'DELETE';
+
+    public const METHOD_GET = 'GET';
+
+    public const METHOD_HEAD = 'HEAD';
+
+    public const METHOD_OPTIONS = 'OPTIONS';
+
+    public const METHOD_PATCH = 'PATCH';
+
+    public const METHOD_POST = 'POST';
+
+    public const METHOD_PUT = 'PUT';
+
+    public const METHOD_TRACE = 'TRACE';
+
+    public const VALID_METHODS = [
         self::METHOD_CONNECT,
         self::METHOD_DELETE,
         self::METHOD_GET,
@@ -55,7 +78,7 @@ class HeaderTypeBag
         self::METHOD_TRACE,
     ];
 
-    const MESSAGES_CODE = [
+    public const MESSAGES_CODE = [
         //1xx
         100 => 'Continue',
         101 => 'Switching Protocols',

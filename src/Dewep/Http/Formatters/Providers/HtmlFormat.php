@@ -1,4 +1,6 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http\Formatters\Providers;
 
@@ -6,26 +8,17 @@ use Dewep\Exception\UndefinedFormatException;
 use Dewep\Http\Interfaces\FormattersInterface;
 use Dewep\Http\Stream;
 
-/**
- * Class HtmlFormat
- *
- * @package Dewep\Http\Formatters\Providers
- */
-class HtmlFormat implements FormattersInterface
+final class HtmlFormat implements FormattersInterface
 {
-    /**
-     * @param string $contentType
-     *
-     * @return bool
-     */
     public static function detect(string $contentType): bool
     {
         return (bool)stripos($contentType, '/html');
     }
 
     /**
-     * @return string
      * @throws \Dewep\Exception\StreamException
+     *
+     * @return string
      */
     public static function data()
     {
@@ -35,7 +28,6 @@ class HtmlFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return \DOMDocument
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function decode($data): \DOMDocument
@@ -44,14 +36,13 @@ class HtmlFormat implements FormattersInterface
             return $data;
         }
 
-        if (is_string($data)) {
+        if (!is_string($data)) {
             throw new UndefinedFormatException('Invalid HTML format');
         }
 
         try {
             $doc = new \DOMDocument('5', 'UTF-8');
             $doc->loadHTML($data);
-
         } catch (\Throwable $e) {
             throw new UndefinedFormatException(
                 'Invalid HTML format: '.$e->getMessage()
@@ -64,12 +55,11 @@ class HtmlFormat implements FormattersInterface
     /**
      * @param mixed $data
      *
-     * @return string
      * @throws \Dewep\Exception\UndefinedFormatException
      */
     public static function encode($data): string
     {
-        if ($data === null) {
+        if (null === $data) {
             return '';
         }
 
@@ -86,7 +76,6 @@ class HtmlFormat implements FormattersInterface
             $doc->loadXML(XmlFormat::encode($data));
 
             return (string)$doc->saveHTML();
-
         } catch (UndefinedFormatException $e) {
             throw $e;
         } catch (\Throwable $e) {
@@ -95,5 +84,4 @@ class HtmlFormat implements FormattersInterface
             );
         }
     }
-
 }

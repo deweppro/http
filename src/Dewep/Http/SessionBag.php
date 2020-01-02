@@ -1,39 +1,21 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
 use Dewep\Http\Interfaces\ArrayAccessInterface;
 
-/**
- * Class SessionBag
- *
- * @package Dewep\Http
- */
-class SessionBag implements ArrayAccessInterface
+final class SessionBag implements ArrayAccessInterface
 {
     /** @var array */
-    protected $object = [];
+    private $object = [];
 
-    /**
-     * SessionBag constructor.
-     *
-     * @param array $data
-     */
     public function __construct(array &$data)
     {
         $this->object = $data;
     }
 
-    /**
-     * @param \SessionHandlerInterface|null $handler
-     * @param int                           $lifetime
-     * @param string                        $domain
-     * @param string                        $path
-     * @param bool                          $secure
-     * @param bool                          $httponly
-     *
-     * @return \Dewep\Http\SessionBag
-     */
     public static function initialize(
         ?\SessionHandlerInterface $handler,
         int $lifetime = 3600,
@@ -42,8 +24,7 @@ class SessionBag implements ArrayAccessInterface
         bool $secure = false,
         bool $httponly = true
     ): self {
-
-        if ($handler !== null) {
+        if (null !== $handler) {
             session_set_save_handler($handler, true);
         }
 
@@ -54,17 +35,15 @@ class SessionBag implements ArrayAccessInterface
     }
 
     /**
-     * @param string $key
-     * @param mixed  $value
+     * @param mixed $value
      */
-    public function set(string $key, $value)
+    public function set(string $key, $value): void
     {
         $this->object[$key] = $value;
     }
 
     /**
-     * @param string $key
-     * @param mixed  $default
+     * @param mixed $default
      *
      * @return mixed
      */
@@ -73,51 +52,33 @@ class SessionBag implements ArrayAccessInterface
         return $this->object[$key] ?? $default;
     }
 
-    /**
-     * @return array
-     */
     public function keys(): array
     {
         return array_keys($this->object);
     }
 
-    /**
-     * @param string $key
-     *
-     * @return bool
-     */
     public function has(string $key): bool
     {
         return array_key_exists($key, $this->object);
     }
 
-    /**
-     * @return array
-     */
     public function all(): array
     {
         return $this->object;
     }
 
-    /**
-     * @param array $data
-     */
-    public function replace(array $data)
+    public function replace(array $data): void
     {
         $this->object = $data;
     }
 
-    /**
-     * @param string $key
-     */
-    public function remove(string $key)
+    public function remove(string $key): void
     {
         unset($this->object[$key]);
     }
 
-    public function reset()
+    public function reset(): void
     {
         $this->object = [];
     }
-
 }

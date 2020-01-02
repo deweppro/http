@@ -1,19 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
-/**
- * Class ServerBag
- *
- * @package Dewep\Http
- */
-class ServerBag extends ArrayAccess
+final class ServerBag extends ArrayAccess
 {
-    /**
-     * ServerBag constructor.
-     *
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         parent::__construct(true);
@@ -26,7 +18,7 @@ class ServerBag extends ArrayAccess
         $headers = array_filter(
             $_SERVER,
             function ($k) {
-                return stripos($k, 'HTTP_') !== 0;
+                return 0 !== stripos($k, 'HTTP_');
             },
             ARRAY_FILTER_USE_KEY
         );
@@ -34,61 +26,38 @@ class ServerBag extends ArrayAccess
         return new static($headers);
     }
 
-    /**
-     * @return string
-     */
     public function getRequestMethod(): string
     {
         return (string)$this->get(HeaderTypeBag::REQUEST_METHOD, '');
     }
 
-
-    /**
-     * @return bool
-     */
     public function isOptions(): bool
     {
-        return $this->getRequestMethod() === HeaderTypeBag::METHOD_OPTIONS;
+        return HeaderTypeBag::METHOD_OPTIONS === $this->getRequestMethod();
     }
 
-    /**
-     * @return bool
-     */
     public function isGet(): bool
     {
-        return $this->getRequestMethod() === HeaderTypeBag::METHOD_GET;
+        return HeaderTypeBag::METHOD_GET === $this->getRequestMethod();
     }
 
-    /**
-     * @return bool
-     */
     public function isPost(): bool
     {
-        return $this->getRequestMethod() === HeaderTypeBag::METHOD_POST;
+        return HeaderTypeBag::METHOD_POST === $this->getRequestMethod();
     }
 
-    /**
-     * @return bool
-     */
     public function isPut(): bool
     {
-        return $this->getRequestMethod() === HeaderTypeBag::METHOD_PUT;
+        return HeaderTypeBag::METHOD_PUT === $this->getRequestMethod();
     }
 
-    /**
-     * @return bool
-     */
     public function isDelete(): bool
     {
-        return $this->getRequestMethod() === HeaderTypeBag::METHOD_DELETE;
+        return HeaderTypeBag::METHOD_DELETE === $this->getRequestMethod();
     }
 
-    /**
-     * @return bool
-     */
     public function isPatch(): bool
     {
-        return $this->getRequestMethod() === HeaderTypeBag::METHOD_PATCH;
+        return HeaderTypeBag::METHOD_PATCH === $this->getRequestMethod();
     }
-
 }

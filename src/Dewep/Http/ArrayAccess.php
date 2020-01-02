@@ -1,14 +1,11 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
 use Dewep\Http\Interfaces\ArrayAccessInterface;
 
-/**
- * Class ArrayAccess
- *
- * @package Dewep\Http
- */
 class ArrayAccess implements ArrayAccessInterface
 {
     /** @var \ArrayObject */
@@ -17,11 +14,6 @@ class ArrayAccess implements ArrayAccessInterface
     /** @var bool */
     protected $canonize = true;
 
-    /**
-     * ArrayAccess constructor.
-     *
-     * @param bool $canonize
-     */
     public function __construct(bool $canonize = true)
     {
         $this->setCanonize($canonize);
@@ -29,42 +21,9 @@ class ArrayAccess implements ArrayAccessInterface
     }
 
     /**
-     * @return \ArrayObject
+     * @param mixed $value
      */
-    private function getObject(): \ArrayObject
-    {
-        return $this->object;
-    }
-
-    /**
-     * @param \ArrayObject $object
-     */
-    private function setObject(\ArrayObject $object): void
-    {
-        $this->object = $object;
-    }
-
-    /**
-     * @return bool
-     */
-    private function isCanonize(): bool
-    {
-        return $this->canonize;
-    }
-
-    /**
-     * @param bool $canonize
-     */
-    private function setCanonize(bool $canonize): void
-    {
-        $this->canonize = $canonize;
-    }
-
-    /**
-     * @param string $key
-     * @param mixed  $value
-     */
-    public function set(string $key, $value)
+    public function set(string $key, $value): void
     {
         if ($this->isCanonize()) {
             $key = self::canonize($key);
@@ -73,8 +32,7 @@ class ArrayAccess implements ArrayAccessInterface
     }
 
     /**
-     * @param string $key
-     * @param mixed  $default
+     * @param mixed $default
      *
      * @return mixed
      */
@@ -91,9 +49,6 @@ class ArrayAccess implements ArrayAccessInterface
         return $default;
     }
 
-    /**
-     * @return array
-     */
     public function keys(): array
     {
         $keys = [];
@@ -106,11 +61,6 @@ class ArrayAccess implements ArrayAccessInterface
         return $keys;
     }
 
-    /**
-     * @param string $key
-     *
-     * @return bool
-     */
     public function has(string $key): bool
     {
         if ($this->isCanonize()) {
@@ -120,28 +70,19 @@ class ArrayAccess implements ArrayAccessInterface
         return $this->getObject()->offsetExists($key);
     }
 
-    /**
-     * @return array
-     */
     public function all(): array
     {
         return $this->getObject()->getArrayCopy();
     }
 
-    /**
-     * @param array $data
-     */
-    public function replace(array $data)
+    public function replace(array $data): void
     {
         foreach ($data as $key => $value) {
             $this->set((string)$key, $value);
         }
     }
 
-    /**
-     * @param string $key
-     */
-    public function remove(string $key)
+    public function remove(string $key): void
     {
         if ($this->isCanonize()) {
             $key = self::canonize($key);
@@ -149,7 +90,7 @@ class ArrayAccess implements ArrayAccessInterface
         $this->getObject()->offsetUnset($key);
     }
 
-    public function reset()
+    public function reset(): void
     {
         $iterator = $this->getObject()->getIterator();
         while ($iterator->valid()) {
@@ -158,14 +99,9 @@ class ArrayAccess implements ArrayAccessInterface
         }
     }
 
-    /**
-     * @param string $key
-     *
-     * @return string
-     */
     public static function canonize(string $key): string
     {
-        if (stripos($key, 'HTTP_') === 0) {
+        if (0 === stripos($key, 'HTTP_')) {
             $key = substr($key, 5);
         }
         $key = str_replace(['_', '-'], ' ', $key);
@@ -174,4 +110,23 @@ class ArrayAccess implements ArrayAccessInterface
         return str_replace(' ', '-', $key);
     }
 
+    protected function getObject(): \ArrayObject
+    {
+        return $this->object;
+    }
+
+    protected function setObject(\ArrayObject $object): void
+    {
+        $this->object = $object;
+    }
+
+    protected function isCanonize(): bool
+    {
+        return $this->canonize;
+    }
+
+    protected function setCanonize(bool $canonize): void
+    {
+        $this->canonize = $canonize;
+    }
 }

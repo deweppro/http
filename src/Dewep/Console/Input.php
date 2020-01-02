@@ -1,33 +1,27 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Console;
 
 use Dewep\Http\ArrayAccess;
 
-/**
- * Class Input
- *
- * @package Dewep\Console
- */
-class Input extends ArrayAccess
+final class Input extends ArrayAccess
 {
-    /**
-     * Input constructor.
-     */
     public function __construct()
     {
         parent::__construct(false);
     }
 
-    public function initialize()
+    public function initialize(): void
     {
-        foreach ($_SERVER["argv"] as $key => $arg) {
+        foreach ($_SERVER['argv'] as $key => $arg) {
             $matches = null;
             if (preg_match('@^\-\-(.+)=(.+)@', $arg, $matches)) {
                 if ($this->has($matches[1])) {
                     $this->set($matches[1], $matches[2]);
                 }
-            } elseif (preg_match("@^\-\-(.+)@", $arg, $matches)) {
+            } elseif (preg_match('@^\\-\\-(.+)@', $arg, $matches)) {
                 if ($this->has($matches[1])) {
                     $this->set($matches[1], true);
                 }
@@ -36,10 +30,9 @@ class Input extends ArrayAccess
     }
 
     /**
-     * @param string $name
-     * @param mixed  $default
+     * @param null $default
      */
-    public function setOptions(string $name, $default = null)
+    public function setOptions(string $name, $default = null): void
     {
         $name = strtolower($name);
         $this->set($name, $default);

@@ -1,18 +1,16 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
 use Dewep\Exception\StreamException;
 
-/**
- * Class Stream
- *
- * @package Dewep
- */
-class Stream
+final class Stream
 {
-    const PIPE  = 4480;
-    const OTHER = 33206;
+    public const PIPE = 4480;
+
+    public const OTHER = 33206;
 
     /** @var array */
     private static $modes = [
@@ -27,11 +25,9 @@ class Stream
     private $pipe = false;
 
     /**
-     * Stream constructor.
+     * @param mixed $handle
      *
-     * @param resource|false $handle
-     *
-     * @throws \Dewep\Exception\StreamException
+     * @throws StreamException
      */
     public function __construct($handle)
     {
@@ -40,11 +36,17 @@ class Stream
         }
 
         $this->handle = $handle;
-        $stat = fstat($this->handle);
 
-        if ($stat['mode'] == self::PIPE) {
+        $fstat = fstat($this->handle);
+        if (!is_array($fstat)) {
+            throw new StreamException('Undefined resource mode.');
+        }
+
+        $mode = (int)($fstat['mode'] ?? 0);
+
+        if (self::PIPE === $mode) {
             $this->pipe = true;
-        } elseif ($stat['mode'] == self::OTHER) {
+        } elseif (self::OTHER === $mode) {
             $this->pipe = false;
         } else {
             throw new StreamException('Undefined resource mode.');
@@ -56,28 +58,7 @@ class Stream
         $this->close();
     }
 
-    /**
-     * @return \Dewep\Http\Stream
-     * @throws \Dewep\Exception\StreamException
-     */
-    public static function initialize(): self
-    {
-        $handle = fopen('php://temp', 'r+');
-        $source = fopen('php://input', 'r');
-
-        if ($handle !== false && $source !== false) {
-            stream_copy_to_stream($source, $handle);
-            rewind($handle);
-            fclose($source);
-        }
-
-        return new static($handle);
-    }
-
-    /**
-     * @return string
-     */
-    public function __toString()
+    public function __toString(): string
     {
         try {
             $this->rewind();
@@ -91,7 +72,24 @@ class Stream
     /**
      * @throws \Dewep\Exception\StreamException
      */
-    public function rewind()
+    public static function initialize(): self
+    {
+        $handle = fopen('php://temp', 'r+');
+        $source = fopen('php://input', 'r');
+
+        if (false !== $handle && false !== $source) {
+            stream_copy_to_stream($source, $handle);
+            rewind($handle);
+            fclose($source);
+        }
+
+        return new self($handle);
+    }
+
+    /**
+     * @throws \Dewep\Exception\StreamException
+     */
+    public function rewind(): void
     {
         if (
             false === $this->isSeekable() ||
@@ -101,9 +99,6 @@ class Stream
         }
     }
 
-    /**
-     * @return bool
-     */
     public function isSeekable(): bool
     {
         $mode = $this->getMetadata('seekable');
@@ -112,8 +107,6 @@ class Stream
     }
 
     /**
-     * @param string $key
-     *
      * @return mixed
      */
     public function getMetadata(string $key)
@@ -123,22 +116,16 @@ class Stream
         return $meta[$key] ?? null;
     }
 
-    /**
-     * @return array
-     */
     public function getAllMetadata(): array
     {
         return stream_get_meta_data($this->handle);
     }
 
-    /**
-     * @return string
-     */
     public function getContents(): string
     {
         if (
-            $this->isReadable() === false ||
-            ($contents = stream_get_contents($this->handle)) === false
+            false === $this->isReadable() ||
+            false === ($contents = stream_get_contents($this->handle))
         ) {
             return '';
         }
@@ -146,16 +133,13 @@ class Stream
         return (string)$contents;
     }
 
-    /**
-     * @return bool
-     */
     public function isReadable(): bool
     {
         $mode = $this->getMetadata('mode');
         $readeble = array_filter(
             self::$modes['readable'],
             function ($v) use ($mode) {
-                return stripos((string)$mode, $v) !== false;
+                return false !== stripos((string)$mode, $v);
             },
             ARRAY_FILTER_USE_BOTH
         );
@@ -163,7 +147,7 @@ class Stream
         return !empty($readeble);
     }
 
-    public function close()
+    public function close(): void
     {
         if (!is_resource($this->handle)) {
             return;
@@ -191,24 +175,20 @@ class Stream
         return $old;
     }
 
-    /**
-     * @return int
-     */
     public function getSize(): int
     {
-        $stats = fstat($this->handle);
+        $stats = (array)fstat($this->handle);
 
-        return $stats['size'] ?? 0;
+        return (int)($stats['size'] ?? 0);
     }
 
     /**
-     * @return int
      * @throws \Dewep\Exception\StreamException
      */
     public function tell(): int
     {
         if (
-            ($position = ftell($this->handle)) === false ||
+            false === ($position = ftell($this->handle)) ||
             $this->pipe
         ) {
             throw new StreamException(
@@ -219,41 +199,32 @@ class Stream
         return (int)$position;
     }
 
-    /**
-     * @return bool
-     */
     public function eof(): bool
     {
         return feof($this->handle);
     }
 
     /**
-     * @param int $offset
-     * @param int $whence
-     *
      * @throws \Dewep\Exception\StreamException
      */
-    public function seek(int $offset, int $whence = SEEK_SET)
+    public function seek(int $offset, int $whence = SEEK_SET): void
     {
         if (
             !$this->isSeekable() ||
-            fseek($this->handle, $offset, $whence) === -1
+            -1 === fseek($this->handle, $offset, $whence)
         ) {
             throw new StreamException('Could not seek in stream');
         }
     }
 
     /**
-     * @param string $string
-     *
-     * @return int
      * @throws \Dewep\Exception\StreamException
      */
     public function write(string $string): int
     {
         if (
             !$this->isWritable() ||
-            ($written = fwrite($this->handle, $string)) === false
+            false === ($written = fwrite($this->handle, $string))
         ) {
             throw new StreamException('Could not write to stream');
         }
@@ -261,16 +232,13 @@ class Stream
         return (int)$written;
     }
 
-    /**
-     * @return bool
-     */
     public function isWritable(): bool
     {
         $mode = $this->getMetadata('mode');
         $writable = array_filter(
             self::$modes['writable'],
             function ($v) use ($mode) {
-                return stripos((string)$mode, $v) !== false;
+                return false !== stripos((string)$mode, $v);
             },
             ARRAY_FILTER_USE_BOTH
         );
@@ -279,16 +247,13 @@ class Stream
     }
 
     /**
-     * @param int $length
-     *
-     * @return string
      * @throws \Dewep\Exception\StreamException
      */
     public function read(int $length): string
     {
         if (
             !$this->isReadable() ||
-            ($data = fread($this->handle, $length)) === false
+            false === ($data = fread($this->handle, $length))
         ) {
             throw new StreamException('Could not read from stream');
         }

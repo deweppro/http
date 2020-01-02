@@ -1,30 +1,23 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http\Formatters\Providers;
 
 use Dewep\Http\Interfaces\FormattersInterface;
 use Dewep\Http\Stream;
 
-/**
- * Class DumpFormat
- *
- * @package Dewep\Http\Formatters\Providers
- */
-class DumpFormat implements FormattersInterface
+final class DumpFormat implements FormattersInterface
 {
-    /**
-     * @param string $contentType
-     *
-     * @return bool
-     */
     public static function detect(string $contentType): bool
     {
         return true;
     }
 
     /**
-     * @return string
      * @throws \Dewep\Exception\StreamException
+     *
+     * @return string
      */
     public static function data()
     {
@@ -33,8 +26,6 @@ class DumpFormat implements FormattersInterface
 
     /**
      * @param mixed $data
-     *
-     * @return string
      */
     public static function decode($data): string
     {
@@ -47,12 +38,10 @@ class DumpFormat implements FormattersInterface
 
     /**
      * @param mixed $data
-     *
-     * @return string
      */
     public static function encode($data): string
     {
-        if ($data === null) {
+        if (null === $data) {
             return '';
         }
 
@@ -62,5 +51,4 @@ class DumpFormat implements FormattersInterface
 
         return var_export($data, true);
     }
-
 }

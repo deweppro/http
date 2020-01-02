@@ -1,39 +1,32 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
-class FileBag
+final class FileBag
 {
     /** @var string */
-    protected $file = '';
+    private $file = '';
 
     /** @var \Dewep\Http\Stream|null */
-    protected $stream;
+    private $stream;
 
     /** @var string */
-    protected $name = '';
+    private $name = '';
 
     /** @var string */
-    protected $type = '';
+    private $type = '';
 
     /** @var int */
-    protected $size = 0;
+    private $size = 0;
 
     /** @var int */
-    protected $error = UPLOAD_ERR_OK;
+    private $error = UPLOAD_ERR_OK;
 
     /** @var bool */
-    protected $moved = false;
+    private $moved = false;
 
-    /**
-     * FileBag constructor.
-     *
-     * @param string $file
-     * @param string $name
-     * @param string $type
-     * @param int    $size
-     * @param int    $error
-     */
     public function __construct(string $file, string $name, string $type, int $size, int $error)
     {
         $this->file = $file;
@@ -64,12 +57,11 @@ class FileBag
     }
 
     /**
-     * @return \Dewep\Http\Stream|null
      * @throws \Dewep\Exception\StreamException
      */
     public function get(): ?Stream
     {
-        if ($this->stream === null) {
+        if (null === $this->stream) {
             $this->open();
         }
 
@@ -79,20 +71,9 @@ class FileBag
     /**
      * @throws \Dewep\Exception\StreamException
      */
-    protected function open()
-    {
-        $this->stream = new Stream(fopen($this->file, 'r'));
-    }
-
-    /**
-     * @param string $targetPath
-     *
-     * @return bool
-     * @throws \Dewep\Exception\StreamException
-     */
     public function moveTo(string $targetPath): bool
     {
-        if ($this->moved === true) {
+        if (true === $this->moved) {
             $result = copy($this->file, $targetPath);
         } else {
             $result = move_uploaded_file($this->file, $targetPath);
@@ -106,36 +87,31 @@ class FileBag
         return $result;
     }
 
-    /**
-     * @return int
-     */
     public function getSize(): int
     {
         return $this->size;
     }
 
-    /**
-     * @return int
-     */
     public function getError(): int
     {
         return $this->error;
     }
 
-    /**
-     * @return string
-     */
     public function getClientFilename(): string
     {
         return $this->name;
     }
 
-    /**
-     * @return string
-     */
     public function getClientMediaType(): string
     {
         return $this->type;
     }
 
+    /**
+     * @throws \Dewep\Exception\StreamException
+     */
+    private function open(): void
+    {
+        $this->stream = new Stream(fopen($this->file, 'r'));
+    }
 }

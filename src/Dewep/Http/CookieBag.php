@@ -1,43 +1,30 @@
-<?php declare(strict_types=1);
+<?php
+
+declare(strict_types=1);
 
 namespace Dewep\Http;
 
-/**
- * Class CookieBag
- *
- * @package Dewep\Http
- */
-class CookieBag extends ArrayAccess
+final class CookieBag extends ArrayAccess
 {
     /** @var array */
     protected $update = [];
 
-    /**
-     * CookieBag constructor.
-     *
-     * @param array $data
-     */
     public function __construct(array $data)
     {
         parent::__construct(false);
 
-        $this->replace($data);
+        foreach ($data as $key => $value) {
+            $this->getObject()->offsetSet($key, $value);
+        }
     }
 
-    /**
-     * @return \Dewep\Http\CookieBag
-     */
     public static function initialize(): self
     {
         return new static($_COOKIE);
     }
 
     /**
-     * @param string      $key
-     * @param mixed       $value
-     * @param int|null    $expire
-     * @param string|null $path
-     * @param string|null $domain
+     * @param mixed $value
      */
     public function set(
         string $key,
@@ -45,29 +32,24 @@ class CookieBag extends ArrayAccess
         ?int $expire = null,
         ?string $path = null,
         ?string $domain = null
-    ) {
+    ): void {
         if (!is_scalar($value)) {
             return;
         }
+
         parent::set($key, $value);
 
         $this->update[$key] = [$key, $value, $expire, $path, $domain];
     }
 
-    /**
-     * @param string $key
-     */
-    public function remove(string $key)
+    public function remove(string $key): void
     {
         parent::remove($key);
 
         $this->update[$key] = [$key, '', time() - 1];
     }
 
-    /**
-     *
-     */
-    public function reset()
+    public function reset(): void
     {
         foreach ($this->all() as $key => $value) {
             $this->update[$key] = [$key, '', time() - 1];
@@ -75,7 +57,7 @@ class CookieBag extends ArrayAccess
         parent::reset();
     }
 
-    public function send()
+    public function send(): void
     {
         foreach ($this->update as [$key, $value, $expire, $path, $domain]) {
             header(
