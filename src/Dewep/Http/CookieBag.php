@@ -33,18 +33,25 @@ class CookieBag extends ArrayAccess
     }
 
     /**
-     * @param string $key
-     * @param mixed  $value
-     * @param int    $expire
+     * @param string      $key
+     * @param mixed       $value
+     * @param int|null    $expire
+     * @param string|null $path
+     * @param string|null $domain
      */
-    public function set(string $key, $value, int $expire = 3600)
-    {
+    public function set(
+        string $key,
+        $value,
+        ?int $expire = null,
+        ?string $path = null,
+        ?string $domain = null
+    ) {
         if (!is_scalar($value)) {
             return;
         }
         parent::set($key, $value);
 
-        $this->update[$key] = [$key, $value, $expire];
+        $this->update[$key] = [$key, $value, $expire, $path, $domain];
     }
 
     /**
@@ -68,13 +75,28 @@ class CookieBag extends ArrayAccess
         parent::reset();
     }
 
-    /**
-     *
-     */
     public function send()
     {
-        foreach ($this->update as list($key, $value, $expire)) {
-            setcookie($key, $value, $expire);
+        foreach ($this->update as [$key, $value, $expire, $path, $domain]) {
+            header(
+                sprintf(
+                    'Set-Cookie: %s=%s; %s %s %s Secure; HttpOnly; SameSite=Lax',
+                    (string)$key,
+                    (string)$value,
+                    $expire ? sprintf(
+                        'Expires=%s;',
+                        gmdate('D, j M Y H:i:s T', time() + (int)$expire)
+                    ) : '',
+                    $path ? sprintf(
+                        'Path=%s;',
+                        $path
+                    ) : '',
+                    $domain ? sprintf(
+                        'Domain=%s;',
+                        $domain
+                    ) : ''
+                )
+            );
         }
     }
 }
